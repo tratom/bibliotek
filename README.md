@@ -1,2 +1,3 @@
 # bibliotek
-progetto di esame Programmazione per il Web, UnivAq
+web application for library management
+exam project for "Programmazione per il web" course, Information Engineering, UnivAq
