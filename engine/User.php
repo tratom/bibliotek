@@ -1,20 +1,33 @@
 <?php
-require_once DateTime;
+namespace Bibliotek\Entity;
+use DateTime;
+use Exception;
 class User{
-
+    // constants
+    const DEFAULT_LOAN_NUMBER = 3;
+    const DEFAULT_LOAN_DURATION = 15;
+    const DEFAULT_STATUS = True;
+    const DEFAULT_REPUTATION = 0;
+    const DEFAULT_ROLE = 'User';
+    const DEFAULT_MIN_AGE = 18;
     //attributes
 
     private string $name = '';
     private string $surname = '';
-    private DateTime $birthDate;
+    private DateTime $birthDay;
     private string $email = '';
     private string $password = '';
-    private int $maxLoanNum = 3;
-    private int $maxLoanDur = 15;
-    private bool $status = True;
-    private int $reputation = 0;
+    private int $maxLoanNum = User::DEFAULT_LOAN_NUMBER;
+    private int $maxLoanDur = User::DEFAULT_LOAN_DURATION;
+    private bool $status = User::DEFAULT_STATUS;
+    private int $reputation = User::DEFAULT_REPUTATION;
+    private string $role = User::DEFAULT_ROLE;
 
-    //methods
+    /**
+     * This function check wether an input string contains UPPER and lower case characters
+     * comparing it with a regular expression format 
+     * @param string $_string String to be checked
+     */
     private function specialChars(string $_string){
         return preg_match('/[^a-zA-Z0-9]/', $_string) > 0;
     }
@@ -24,33 +37,18 @@ class User{
     public function setSurname(string $_surname){
         $this->surname = $_surname;
     }
-    // note:    php does not support overloading, so I decided to keep the second method
-    //          which take a DateTime as input argument
-
-    // public function setBirthDate(int $_day, int $_month, int $_year){
-    //     try {
-    //         $tempBirthDate = new DateTime("$_year-$_month-$_day 00:00:00");
-    //         if ($tempBirthDate >= new DateTime()){
-    //             throw new Exception('Error: date not valid');
-    //         }
-    //         else {
-    //             $this->birthDate = clone $tempBirthDate;
-    //         }
-    //     }
-    //     catch (Exception $e){
-    //         echo 'Error: '.$e->getMessage();
-    //     }
-    // }
-    public function setBirthDate(DateTime $_dateTime){
-        if ($_dateTime >= new DateTime()){
+    public function setBirthDay(DateTime $_birthDay){
+        $today = new DateTime();
+        $diff = $today->diff($_birthDay);
+        if ($diff->y < User::DEFAULT_MIN_AGE){
             throw new Exception('Error: date not valid');
         }
         else {
-            $this->birthDate = clone $_dateTime;
+            $this->birthDay = clone $_birthDay;
         }
     }
     public function setEmail(string $_email){
-        if(filter_var($_email, FILTER_VALIDATE_EMAIL) === FALSE) {
+        if (filter_var($_email, FILTER_VALIDATE_EMAIL) === FALSE) {
             throw new Exception('Error: email not valid');
         }
         else {
@@ -58,14 +56,14 @@ class User{
         }
     }
     public function setPassword(string $_password){
-        if (specialChars($_password)) {
+        if ($this->specialChars($_password)) {
             $this->password = md5($_password);
         }
         else {
             throw new Exception('Error: password not valid');
         }
     }
-    public function setMaxLoanNum(short $_maxLoanNumber){
+    public function setMaxLoanNum(int $_maxLoanNumber){
         $this->maxLoanNum = $_maxLoanNumber;
     }
     public function setMaxLoanDur(string $_maxLoanDur){
@@ -76,6 +74,16 @@ class User{
     }
     public function setReputation(string $_reputation){
         $this->reputation = $_reputation;
+    }
+    public function setRole(string $_role){
+        switch ($_role) {
+            case 'Administrator':
+            case 'User':
+                $this->role = $_role;
+                break;
+            default:
+                throw new Exception('Error: role not valid');
+        }
     }
     public function getName() : string {
         return $this->name;
@@ -89,9 +97,9 @@ class User{
     public function getBirthDay(int $_format = 1) {
         switch ($_format) {
             case 1:
-                return $this->name;
+                return $this->birthDay->format("d-m-Y");
             case 2:
-                $tempBirthDay = clone $this->birthDate;
+                $tempBirthDay = clone $this->birthDay;
                 return $tempBirthDay;
             default:
                 throw new Exception('Error: parameter out of range');
@@ -116,6 +124,9 @@ class User{
     public function getReputation() : int {
         return $this->reputation;
     }
+    public function getRole() : string {
+        return $this->role;
+    }
     public function comparePassword(string $_password) : bool {
         return $this->password == md5($_password);
     }
@@ -125,46 +136,50 @@ class User{
         DateTime $_birthDay,
         string $_email,
         string $_password,
-        int $_maxLoanNum,
-        int $_maxLoanDur,
-        bool $_status,
-        int $_reputation,
+        int $_maxLoanNum = User::DEFAULT_LOAN_NUMBER,
+        int $_maxLoanDur = User::DEFAULT_LOAN_DURATION,
+        bool $_status = User::DEFAULT_STATUS,
+        int $_reputation = User::DEFAULT_REPUTATION,
+        string $_role = User::DEFAULT_ROLE
     ){
         $this->setName($_name);
         $this->setSurname($_surname);
+        $this->setBirthDay($_birthDay);
         $this->setEmail($_email);
         $this->setPassword($_password);
-        if (isset($_maxLoanNum)) $this->setMaxLoanNum($_maxLoanNum);
-        if (isset($_maxLoanDur)) $this->setMaxLoanDur($_maxLoanDur);
-        if (isset($_status)) $this->setStatus($_status);
-        if (isset($_reputation)) $this->setReputation($_reputation);
+        $this->setMaxLoanNum($_maxLoanNum);
+        $this->setMaxLoanDur($_maxLoanDur);
+        $this->setStatus($_status);
+        $this->setReputation($_reputation);
+        $this->setRole($_role);
     }
     public function __toString() {
         $message = str_pad('Name:', 20);
-        $message = $messge."$this->getName()\n";
-        $message = str_pad('Surname:', 20);
-        $message = $messge."$this->getSurname()\n";
-        $message = str_pad('Birth Day:', 20);
-        $message = $messge."$this->getBirthDay(1)\n";
-        $message = str_pad('E-Mail:', 20);
-        $message = $messge."$this->getemail()\n";
-        $message = str_pad('Password:', 20);
-        $message = $messge."$this->getPassword()\n";
-        $message = str_pad('Max Loan Number:', 20);
-        $message = $messge."$this->getMaxLoanNum()\n";
-        $message = str_pad('Max Loan Duration:', 20);
-        $message = $messge."$this->getMaxLoanDur()\n";
-        $message = str_pad('Status:', 20);
+        $message = $message.$this->getName()."\n";
+        $message = $message.str_pad('Surname:', 20);
+        $message = $message.$this->getSurname()."\n";
+        $message = $message.str_pad('Birth Day:', 20);
+        $message = $message.$this->getBirthDay(1)."\n";
+        $message = $message.str_pad('E-Mail:', 20);
+        $message = $message.$this->getemail()."\n";
+        $message = $message.str_pad('Password:', 20);
+        $message = $message.$this->getPassword()."\n";
+        $message = $message.str_pad('Max Loan Number:', 20);
+        $message = $message.$this->getMaxLoanNum()."\n";
+        $message = $message.str_pad('Max Loan Duration:', 20);
+        $message = $message.$this->getMaxLoanDur()."\n";
+        $message = $message.str_pad('Status:', 20);
         if ($this->getStatus()==1){
-            $message = $messge."ACTIVE\n";
+            $message = $message."ACTIVE\n";
         }
         else {
-            $message = $messge."INACTIVE\n";
+            $message = $message."INACTIVE\n";
         }
-        $message = str_pad('Reputation:', 20);
-        $message = $messge."$this->getReputation()\n";
+        $message = $message.str_pad('Reputation:', 20);
+        $message = $message.$this->getReputation()."\n";
+        $message = $message.str_pad('Role:', 20);
+        $message = $message.$this->getRole()."\n";
         return $message;
     }
 }
-
 ?>
