@@ -18,13 +18,13 @@ class Donation{
 
 
     //functions
-    public function Donation(Book $_book, User $_user, int $_quantity){
+    public function DonationWithBook(Book $_book, User $_user, int $_quantity){
         $this->book = $_book;
         $this->giver = $_user;
         $this->quantity = $_quantity;
     }
     
-    public function Donation(string $_bookTitle, string $_bookISBN, int $_bookYear, string $_bookAuthor, string $_bookGenre, string $_bookDescription, User $_giver, int $_quantity){
+    public function DonationWithoutBook(string $_bookTitle, string $_bookISBN, int $_bookYear, string $_bookAuthor, string $_bookGenre, string $_bookDescription, User $_giver, int $_quantity){
         $this->book->title = $_bookTitle;
         $this->book->ISBN = $_bookISBN;
         $this->book->year = $_bookYear;
@@ -56,7 +56,7 @@ class Donation{
             return 1;
         }
         elseif($this->status == TRUE){
-            return 2
+            return 2;
         }
     }
 
