@@ -2,6 +2,12 @@
 namespace Bibliotek\Entity;
 use DateTime;
 use Exception;
+
+enum Role: string {
+    case Administrator = 'A';
+    case User = 'U';
+}
+
 class User{
     // constants
     const DEFAULT_LOAN_NUMBER = 3;
@@ -9,7 +15,7 @@ class User{
     const DEFAULT_STATUS = True;
     const DEFAULT_REPUTATION = 0;
     const DEFAULT_ROLE = 'User';
-    const DEFAULT_MIN_AGE = 18;
+    const DEFAULT_MIN_AGE = 1;
     //attributes
 
     private string $name = '';
@@ -28,7 +34,7 @@ class User{
      * comparing it with a regular expression format 
      * @param string $_string String to be checked
      */
-    private function specialChars(string $_string){
+    private function hasSpecialChars(string $_string){
         return preg_match('/[^a-zA-Z0-9]/', $_string) > 0;
     }
     public function setName(string $_name){
@@ -56,7 +62,7 @@ class User{
         }
     }
     public function setPassword(string $_password){
-        if ($this->specialChars($_password)) {
+        if ($this->hasSpecialChars($_password)) {
             $this->password = md5($_password);
         }
         else {
