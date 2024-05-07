@@ -4,8 +4,8 @@ use DateTime;
 use Exception;
 
 enum Role: string {
-    case Administrator = 'A';
-    case User = 'U';
+    case Administrator = 'Administrator';
+    case User = 'User';
 }
 
 class User{
@@ -30,8 +30,8 @@ class User{
     private string $role = User::DEFAULT_ROLE;
 
     /**
-     * This function check wether an input string contains UPPER and lower case characters
-     * comparing it with a regular expression format 
+     * This function check wether an input string contains uppercase, lowercase
+     * and special characters, comparing it with a regular expression format 
      * @param string $_string String to be checked
      */
     private function hasSpecialChars(string $_string){
@@ -133,7 +133,11 @@ class User{
     public function getRole() : string {
         return $this->role;
     }
-    public function comparePassword(string $_password) : bool {
+    /**
+     * Check wether an input string has the same md5 hash of the password's parameter
+     * @param string $_password String from which generate md5 hash to be compared
+     */
+    public function hasSameHash(string $_password) : bool {
         return $this->password == md5($_password);
     }
     public function __construct(
@@ -160,32 +164,32 @@ class User{
         $this->setRole($_role);
     }
     public function __toString() {
-        $message = str_pad('Name:', 20);
-        $message = $message.$this->getName()."\n";
-        $message = $message.str_pad('Surname:', 20);
-        $message = $message.$this->getSurname()."\n";
-        $message = $message.str_pad('Birth Day:', 20);
-        $message = $message.$this->getBirthDay(1)."\n";
-        $message = $message.str_pad('E-Mail:', 20);
-        $message = $message.$this->getemail()."\n";
-        $message = $message.str_pad('Password:', 20);
-        $message = $message.$this->getPassword()."\n";
-        $message = $message.str_pad('Max Loan Number:', 20);
-        $message = $message.$this->getMaxLoanNum()."\n";
-        $message = $message.str_pad('Max Loan Duration:', 20);
-        $message = $message.$this->getMaxLoanDur()."\n";
-        $message = $message.str_pad('Status:', 20);
+        $output = str_pad('Name:', 20);
+        $output = $output.$this->getName()."\n";
+        $output = $output.str_pad('Surname:', 20);
+        $output = $output.$this->getSurname()."\n";
+        $output = $output.str_pad('Birth Day:', 20);
+        $output = $output.$this->getBirthDay(1)."\n";
+        $output = $output.str_pad('E-Mail:', 20);
+        $output = $output.$this->getemail()."\n";
+        $output = $output.str_pad('Password:', 20);
+        $output = $output.$this->getPassword()."\n";
+        $output = $output.str_pad('Max Loan Number:', 20);
+        $output = $output.$this->getMaxLoanNum()."\n";
+        $output = $output.str_pad('Max Loan Duration:', 20);
+        $output = $output.$this->getMaxLoanDur()."\n";
+        $output = $output.str_pad('Status:', 20);
         if ($this->getStatus()==1){
-            $message = $message."ACTIVE\n";
+            $output = $output."ACTIVE\n";
         }
         else {
-            $message = $message."INACTIVE\n";
+            $output = $output."INACTIVE\n";
         }
-        $message = $message.str_pad('Reputation:', 20);
-        $message = $message.$this->getReputation()."\n";
-        $message = $message.str_pad('Role:', 20);
-        $message = $message.$this->getRole()."\n";
-        return $message;
+        $output = $output.str_pad('Reputation:', 20);
+        $output = $output.$this->getReputation()."\n";
+        $output = $output.str_pad('Role:', 20);
+        $output = $output.$this->getRole()."\n";
+        return $output;
     }
 }
 ?>
