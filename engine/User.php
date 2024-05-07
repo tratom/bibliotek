@@ -141,27 +141,45 @@ class User{
         return $this->password == md5($_password);
     }
     public function __construct(
-        string $_name,
-        string $_surname,
-        DateTime $_birthDay,
-        string $_email,
-        string $_password,
-        int $_maxLoanNum = User::DEFAULT_LOAN_NUMBER,
-        int $_maxLoanDur = User::DEFAULT_LOAN_DURATION,
-        bool $_status = User::DEFAULT_STATUS,
-        int $_reputation = User::DEFAULT_REPUTATION,
-        string $_role = User::DEFAULT_ROLE
-    ){
-        $this->setName($_name);
-        $this->setSurname($_surname);
-        $this->setBirthDay($_birthDay);
-        $this->setEmail($_email);
-        $this->setPassword($_password);
-        $this->setMaxLoanNum($_maxLoanNum);
-        $this->setMaxLoanDur($_maxLoanDur);
-        $this->setStatus($_status);
-        $this->setReputation($_reputation);
-        $this->setRole($_role);
+        array $_userData = array(
+            'name'      => null,
+            'surname'   => null,
+            'birthDay'  => null,
+            'email'     => null,
+            'password'  => null,
+            'maxLoanNum'=> User::DEFAULT_LOAN_NUMBER,
+            'maxLoanDur'=> User::DEFAULT_LOAN_DURATION,
+            'status'    => User::DEFAULT_STATUS,
+            'reputation'=> User::DEFAULT_REPUTATION,
+            'role'      => User::DEFAULT_ROLE
+        )
+    )
+    {
+        if (isset($_userData['name']))
+            $this->setName($_userData['name']);
+        else
+            throw new Exception('Error: name must be not null');
+        if (isset($_userData['surname']))
+            $this->setSurname($_userData['surname']);
+        else
+            throw new Exception('Error: surname must be not null');
+        if (isset($_userData['birthDay']))
+            $this->setBirthDay($_userData['birthDay']);
+        else
+            throw new Exception('Error: birthday must be not null');
+        if (isset($_userData['email']))
+            $this->setEmail($_userData['email']);
+        else
+            throw new Exception('Error: email must be not null');
+        if (isset($_userData['password']))
+            $this->setPassword($_userData['password']);
+        else
+            throw new Exception('Error: password must be not null');
+        $this->setMaxLoanNum($_userData['maxLoanNum']);
+        $this->setMaxLoanDur($_userData['maxLoanDur']);
+        $this->setStatus($_userData['status']);
+        $this->setReputation($_userData['reputation']);
+        $this->setRole($_userData['role']);
     }
     public function __toString() {
         $output = str_pad('Name:', 20);
