@@ -5,7 +5,7 @@ use Book;
 use User;
 use Exception;
 
-class Donation{
+class eDonation{
 
     //attributes
     private DateTime $presentiationDate;

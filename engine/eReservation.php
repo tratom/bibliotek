@@ -4,7 +4,8 @@ use Book;
 use User;
 use Datetime;
 use Exception;
-class Reservation {
+
+class eReservation {
     // attributes
     private int $number;
     private Book $book;

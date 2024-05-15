@@ -3,7 +3,7 @@ namespace Bibliotek\Entity;
 use DateTime;
 use Exception;
 
-class OpenLibraryAPI{
+class uOpenLibraryAPI{
     
     static $options = array(
         CURLOPT_RETURNTRANSFER => true,

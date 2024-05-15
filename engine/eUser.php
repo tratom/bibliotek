@@ -8,7 +8,7 @@ enum Role: string {
     case User = 'User';
 }
 
-class User{
+class eUser{
     // constants
     const DEFAULT_LOAN_NUMBER = 3;
     const DEFAULT_LOAN_DURATION = 15;

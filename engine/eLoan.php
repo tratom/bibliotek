@@ -5,7 +5,7 @@ use Book;
 use User;
 use Exception;
 
-class Loan{
+class eLoan{
 
     //attributes
 
