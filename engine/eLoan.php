@@ -1,8 +1,8 @@
 <?php
 namespace Bibliotek\Entity;
 use DateTime;
-use Book;
-use User;
+use eBook;
+use eUser;
 use Exception;
 
 class eLoan{
@@ -11,14 +11,14 @@ class eLoan{
 
     private DateTime $start;
     private DateTime $end;
-    private Book $book;
-    private User $reader;
+    private eBook $book;
+    private eUser $reader;
     private string $review;
 
 
     //functions
 
-    public function Loan(Book $_book, User $_reader){
+    public function __construct(Book $_book, User $_reader){
         $this->start = new DateTime();
         $this->book = $_book;
         $this->reader = $_reader;
@@ -51,7 +51,7 @@ class eLoan{
         }
     }
 
-    public function getUser() : User {
+    public function getUser() : eUser {
         return $this->reader;
     }
 
@@ -69,7 +69,7 @@ class eLoan{
         
     }
     
-    public function getBook() : Book{
+    public function getBook() : eBook{
         return $this->book;
     }
 
