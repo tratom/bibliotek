@@ -1,8 +1,8 @@
 <?php
 namespace Bibliotek\Entity;
 use DateTime;
-use Book;
-use User;
+use eBook;
+use eUser;
 use Exception;
 
 class eDonation{
@@ -10,31 +10,19 @@ class eDonation{
     //attributes
     private DateTime $presentiationDate;
     private DateTime $convalidationDate;
-    private Book $book;
-    private User $giver;
+    private eBook $book;
+    private eUser $giver;
     private int $quantity;
     private bool $status = FALSE; //the default value for status is FALSE, which means that the donation is not approved
     private string $comment;
 
 
     //functions
-    public function DonationWithBook(Book $_book, User $_user, int $_quantity){
+
+    public function __construct(eBook $_book, eUser $_user, int $_quantity){
         $this->book = $_book;
         $this->giver = $_user;
         $this->quantity = $_quantity;
-        $this->presentationDate = new DateTime();
-    }
-    
-    public function DonationWithoutBook(string $_bookTitle, string $_bookISBN, int $_bookYear, string $_bookAuthor, string $_bookGenre, string $_bookDescription, int $_npages, User $_giver, int $_quantity){
-        $this->book->title = $_bookTitle;
-        $this->book->ISBN = $_bookISBN;
-        $this->book->publishYear = $_bookYear;
-        $this->book->authors->array_push( $_bookAuthor);
-        $this->book->genres->array_push( $_bookGenre);
-        $this->book->description = $_bookDescription;
-        $this->book->pagesNumber = $_npages;
-        $this->quantity = $_quantity;
-        $this->giver = $_giver;
         $this->presentationDate = new DateTime();
     }
 
@@ -87,7 +75,7 @@ class eDonation{
         $this->book->pagesNumber = $_npages;
     }
 
-    public function getBook() :Book{
+    public function getBook() :eBook{
         return $this->book;
     }
 
@@ -99,7 +87,7 @@ class eDonation{
         return $this->quantity;
     }
 
-    public function getGiver():User{
+    public function getGiver():eUser{
         return $this->giver;
     }
 
