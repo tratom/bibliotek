@@ -1,17 +1,17 @@
 <?php
 namespace Bibliotek\Entity;
 use DateTime;
-use eBook;
-use eUser;
+use e_Book;
+use e_User;
 use Exception;
 
-class eDonation{
+class e_Donation{
 
     //attributes
     private DateTime $presentiationDate;
     private DateTime $convalidationDate;
-    private eBook $book;
-    private eUser $giver;
+    private e_Book $book;
+    private e_User $giver;
     private int $quantity;
     private bool $status = FALSE; //the default value for status is FALSE, which means that the donation is not approved
     private string $comment;
@@ -19,7 +19,7 @@ class eDonation{
 
     //functions
 
-    public function __construct(eBook $_book, eUser $_user, int $_quantity){
+    public function __construct(e_Book $_book, eUser $_user, int $_quantity){
         $this->book = $_book;
         $this->giver = $_user;
         $this->quantity = $_quantity;
@@ -75,7 +75,7 @@ class eDonation{
         $this->book->pagesNumber = $_npages;
     }
 
-    public function getBook() :eBook{
+    public function getBook() :e_Book{
         return $this->book;
     }
 

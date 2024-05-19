@@ -1,14 +1,11 @@
 <?php
-namespace Bibliotek\Entity;
-use DateTime;
-use Exception;
 
 enum Role: string {
     case Administrator = 'Administrator';
     case User = 'User';
 }
 
-class eUser{
+class e_User{
     // constants
     const DEFAULT_LOAN_NUMBER = 3;
     const DEFAULT_LOAN_DURATION = 15;
@@ -23,11 +20,11 @@ class eUser{
     private DateTime $birthDay;
     private string $email = '';
     private string $password = '';
-    private int $maxLoanNum = User::DEFAULT_LOAN_NUMBER;
-    private int $maxLoanDur = User::DEFAULT_LOAN_DURATION;
-    private bool $status = User::DEFAULT_STATUS;
-    private int $reputation = User::DEFAULT_REPUTATION;
-    private string $role = User::DEFAULT_ROLE;
+    private int $maxLoanNum = e_User::DEFAULT_LOAN_NUMBER;
+    private int $maxLoanDur = e_User::DEFAULT_LOAN_DURATION;
+    private bool $status = e_User::DEFAULT_STATUS;
+    private int $reputation = e_User::DEFAULT_REPUTATION;
+    private string $role = e_User::DEFAULT_ROLE;
 
     /**
      * This function check wether an input string contains uppercase, lowercase
@@ -46,7 +43,7 @@ class eUser{
     public function setBirthDay(DateTime $_birthDay){
         $today = new DateTime();
         $diff = $today->diff($_birthDay);
-        if ($diff->y < User::DEFAULT_MIN_AGE){
+        if ($diff->y < e_User::DEFAULT_MIN_AGE){
             throw new Exception('Error: date not valid');
         }
         else {
@@ -61,13 +58,20 @@ class eUser{
             $this->email = $_email;
         }
     }
-    public function setPassword(string $_password){
-        if ($this->hasSpecialChars($_password)) {
-            $this->password = md5($_password);
-        }
+    /**
+     * set password attribute
+     * @param bool $mode 0: convert into hash, 1: don't convert into hash
+     */
+    public function setPassword(string $_password, bool $mode = FALSE){
+        if ($mode) $this->password = $_password;
         else {
-            throw new Exception('Error: password not valid');
-        }
+            if ($this->hasSpecialChars($_password)) {
+                $this->password = md5($_password);
+            }
+            else {
+                throw new Exception('Error: password not valid');
+            }
+        }      
     }
     public function setMaxLoanNum(int $_maxLoanNumber){
         $this->maxLoanNum = $_maxLoanNumber;
@@ -103,7 +107,7 @@ class eUser{
     public function getBirthDay(int $_format = 1) {
         switch ($_format) {
             case 1:
-                return $this->birthDay->format("d-m-Y");
+                return $this->birthDay->format("Y-m-d");
             case 2:
                 $tempBirthDay = clone $this->birthDay;
                 return $tempBirthDay;
@@ -147,11 +151,11 @@ class eUser{
             'birthDay'  => null,
             'email'     => null,
             'password'  => null,
-            'maxLoanNum'=> User::DEFAULT_LOAN_NUMBER,
-            'maxLoanDur'=> User::DEFAULT_LOAN_DURATION,
-            'status'    => User::DEFAULT_STATUS,
-            'reputation'=> User::DEFAULT_REPUTATION,
-            'role'      => User::DEFAULT_ROLE
+            'maxLoanNum'=> e_User::DEFAULT_LOAN_NUMBER,
+            'maxLoanDur'=> e_User::DEFAULT_LOAN_DURATION,
+            'status'    => e_User::DEFAULT_STATUS,
+            'reputation'=> e_User::DEFAULT_REPUTATION,
+            'role'      => e_User::DEFAULT_ROLE
         )
     )
     {
@@ -172,7 +176,7 @@ class eUser{
         else
             throw new Exception('Error: email must be not null');
         if (isset($_userData['password']))
-            $this->setPassword($_userData['password']);
+            $this->setPassword($_userData['password'], TRUE);
         else
             throw new Exception('Error: password must be not null');
         $this->setMaxLoanNum($_userData['maxLoanNum']);

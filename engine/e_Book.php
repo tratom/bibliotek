@@ -3,7 +3,7 @@ namespace Bibliotek\Entity;
 use DateTime;
 use Exception;
 
-class eBook{
+class e_Book{
 
     private string $title = '';
     private int $ISBN = 0;
