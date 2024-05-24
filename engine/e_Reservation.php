@@ -1,78 +1,130 @@
 <?php
 namespace Bibliotek\Entity;
-use Book;
-use User;
-use Datetime;
+
+use DateTime;
 use Exception;
 
 class eReservation {
-    // attributes
-    private int $number;
-    private Book $book;
-    private User $reader;
-    private Datetime $estimated_date;
-    //const
+
+    private eBook $book;
+    private eUser $reader;
+    private DateTime $estimated_date;
+    private array $res_list = [];
+
     const Max_Reservation_User = 15;
-    public function Reservation(Book $_book, User $_reader){
-        $this-> book = $_book;
-        $this->reader = $_reader;
+    
+    public function __construct(){
+
+        $this->estimated_date = new Datetime();
     }
+
     public function set_number(int $_number){
-        if($_number>Max_Reservation_User){
-            throw new Exception("Error, the reservation list is full ");
-            }
-        else{
+        if($_number > self::Max_Reservation_User){
+            throw new Exception("Errore, $_number maggiore di Max_Reservation_User ");
+        } else {
             $this->number = $_number;
         }
     }
+
     public function get_number() : int {
         return $this->number;
     }
-    public function get_estimated_date() : Datetime {
-        return $this->estimate_date;
+
+    public function get_estimated_date() : DateTime {
+        return $this->estimated_date;
     }
-    public function get_reader() : User{
+
+    public function get_reader() : eUser {
         return $this->reader;
     }
-    public function get_book() : Book{
+
+    public function get_book() : eBook {
         return $this->book;
     }
-    // this function is used everytime a reader reserve a book and increases the reader's reservation number
-    public function increment_number(){
-        $incrementNumber = $this->number;
-        if($incrementNumber>Max_Reservation_User){
-            throw new Exception("Error, the maximum number of reservation has been reached");
-              }
-        else{
-            $this->number = $_number+1;
+
+    public function set_book(eBook $_book){
+        $this->book = $_book;
+    }
+
+    public function set_reservation_list(eBook $_book, eUser $_user){
+        $this->res_list = array_fill_keys([$this->book], $this->book_number);
+    }
+
+    public function get_reservation_list() : array {
+        return $this->res_list;
+    }
+
+    public function increment_number(int $numb){
+        $incrementNumber = $numb + 1;
+        if($incrementNumber > self::Max_Reservation_User){
+            throw new Exception("Errore, lista di prenotazione piena");
+        } 
+        return $incrementNumber;
+    }
+
+    public function decrement_number(int $numb){
+        $decrementNumber = $numb - 1;
+        if ($decrementNumber == 0){
+            throw new Exception('è il tuo turno');
+        } 
+        return $decrementNumber;
+    }
+
+    public function estimate_date($numb) : DateTime {
+        $id_date = clone $this->estimated_date;  
+        for ($sum = 1; $sum <= $numb; $sum++){
+            $id_date->modify("+15 days");
         }
-     }
-     // this function is used everytime a copy of the book is added to the catalog and decreases the reader's reservation number 
-     public function decrement_number(){
-        $decrementNumber = $this->number;
-        if ($decrementNumber==0){
-            throw new Exception("it's your turn");
-            }
-        else{   
-            $this->number = $_number-1;
+        return $id_date;
+        
+    }
+
+    public function add_reservation(eBook $_book, eUser $_user, int $numb){
+    if ($_book->getQuantity()==0){
+        $incrementNumber = $this->increment_number($numb);
+        $this->res_list= [$_user, $incrementNumber];
+        $this->estimated_date = $this->estimate_date($incrementNumber);
+        $name = $_user->getName();
+        $surname = $_user->getSurname();
+        $User = $name = $_user->getName();
+        echo ("$User, sei stato aggiunto alla lista delle prenotazioni, sei il numero {$incrementNumber}, 
+        data stimata di prelievo: " . $this->estimated_date->format('Y-m-d'));
+    }
+    return $this->res_list;
+}
+
+public function remove_reservation(eUser $_user) {
+    $found = false;
+    foreach ($this->res_list as $key => $value) {
+        if ($value[1] === $_user) {
+            unset($this->res_list[$key]);
+            $found = true;
+            break;
         }
     }
-    // this function calculates the estimated waiting time
-    public function estimate_date(){
-        $id_number = $this->number;
-        $id_date = $this->estimate_date;
-        for ($sum = 1; $sum<= $id_number; ++$sum){
-            $id_date = $id_date->modify("+15 day");
+
+    if ($found) {
+        $this->res_list = array_values($this->res_list);  
+        foreach ($this->res_list as $index => $reservation) {
+            $this->res_list[$index][2] = $index + 1;
         }
-             
+        $name = $_user->getName();
+        $surname = $_user->getSurname();
+        $User = $name . " " . $surname;
+        echo ("$User sei stato rimosso dalla lista delle prenotazioni\n");
+        return $this->res_list;
+    } else {
+        throw new Exception("Utente non trovato nella lista delle prenotazioni");
     }
-    
-        
-        
-
-
-    
-
+}
 
 }
-?>
+
+    
+    
+    
+    
+
+    
+
+    ?>
