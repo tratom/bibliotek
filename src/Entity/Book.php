@@ -1,135 +1,142 @@
 <?php
+
 namespace Bibliotek\Entity;
-use DateTime;
-use Exception;
 
-class e_Book{
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Query\Expr\Comparison;
 
-    private string $title = '';
-    private int $ISBN = 0;
-    private DateTime $publishYear;
-    private $authors = array();
-    private $genres = array();
-    private string $description = '';
-    private int $quantity = 0;
-    private int $pagesNumber = 0;
+#[ORM\Entity]
+#[ORM\Table(name: 'books')]
+class Book {
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private int|null $id = null;
 
-    public function setTitle(string $_title){
-        $this->title = $_title;
+    #[ORM\Column(type: 'text')]
+    private string $title;
+
+    #[ORM\Column(type: 'string')]
+    private string $isbn;
+
+    #[ORM\Column(name: 'publish_year', type: 'date')]
+    private \DateTime $publishYear;
+
+    #[ORM\Column(type: 'text')]
+    private string $authors;
+
+    #[ORM\Column(type: 'text')]
+    private string $genres;
+
+    #[ORM\Column(type: 'text')]
+    private string $description;
+
+    #[ORM\Column(type: 'integer')]
+    private int $quantity;
+
+    #[ORM\Column(name: 'pages_num', type: 'integer')]
+    private int $pagesNum;
+
+    #[ORM\Column(name: 'image_url', type: 'text')]
+    private string $imageURL;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $visibility = True;
+
+    #[ORM\OneToMany(targetEntity: Loan::class, mappedBy: 'book')]
+    private Collection $bookLoans;
+
+    #[ORM\OneToMany(targetEntity: Donation::class, mappedBy: 'book')]
+    private Collection $bookDonations;
+
+    #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'book')]
+    private Collection $bookReservations;
+
+    // Getter and Setter for title
+    public function getId(): string {
+        return $this->id;
     }
-    public function setISBN(int $_ISBN){
-        $this->ISBN = $_ISBN;
-    }
-    public function setPublishYear(DateTime $_publishYear){
-        $this->publishYear = clone $_publishYear;
-    }
-    public function setOneAuthor(string $_author){
-        array_push($this->authors, $_author);
-    }
-    public function setManyAuthors(array $_authors){
-        $this->authors = $_authors;
-    }
-    public function setOneGenre(string $_genre){
-        array_push($this->genres, $_genre);
-    }
-    public function setManyGenres(array $_genres){
-        $this->genres = $_genres;
-    }
-    public function setDescription(string $_description){
-        $this->description = $_description;
-    }
-    public function setQuantity(int $_quantity){
-        $this->quantity = $_quantity;
-    }
-    public function increaseQuantity(int $_amount){
-        $this->quantity += $_amount;
-    }
-    public function setPagesNumber(int $_pagesNumber){
-        $this->pagesNumber = $_pagesNumber;
-    }
-    public function getTitle() : string {
+
+    // Getter and Setter for title
+    public function getTitle(): string {
         return $this->title;
     }
-    public function getISBN() : int {
-        return $this->ISBN;
+
+    public function setTitle(string $title): void {
+        $this->title = $title;
     }
-    /**
-     * @param int $_format Format of the date: 1 - string Y-m-d H:i:s, 2 - DateTime object
-     */
-    public function getPublishYear(int $_format = 1) {
-        switch ($_format) {
-            case 1:
-                return $this->publishYear->format("Y");
-            case 2:
-                return clone $this->publishYear;
-            default:
-                throw new Exception('Error: parameter out of range');
-        }
+
+    // Getter and Setter for isbn
+    public function getISBN(): string {
+        return $this->isbn;
     }
-    public function getAuthors() : array {
-        if (isset($this->authors))
-            return $this->authors;
-        else
-            return array();
+
+    public function setISBN(string $isbn): void {
+        $this->isbn = $isbn;
     }
-    public function getGenres() : array {
-        if (isset($this->genres))
-            return $this->genres;
-        else 
-            return array();
+
+    // Getter and Setter for publishYear
+    public function getPublishYear(): \DateTime {
+        return $this->publishYear;
     }
-    public function getDescription() : string {
+
+    public function setPublishYear(\DateTime $publishYear): void {
+        $this->publishYear = $publishYear;
+    }
+
+    // Getter and Setter for authors
+    public function getAuthors(): string {
+        return $this->authors;
+    }
+
+    public function setAuthors(string $authors): void {
+        $this->authors = $authors;
+    }
+
+    // Getter and Setter for genres
+    public function getGenres(): string {
+        return $this->genres;
+    }
+
+    public function setGenres(string $genres): void {
+        $this->genres = $genres;
+    }
+
+    // Getter and Setter for description
+    public function getDescription(): string {
         return $this->description;
     }
-    public function getQuantity() : int {
+
+    public function setDescription(string $description): void {
+        $this->description = $description;
+    }
+
+    // Getter and Setter for quantity
+    public function getQuantity(): int {
         return $this->quantity;
     }
-    public function getPagesNumber() : int {
-        return $this->pagesNumber;
+
+    public function setQuantity(int $quantity): void {
+        $this->quantity = $quantity;
     }
-    
-    public function __construct(array $_values){
-        try {
-            $this->title = $_values['title'];
-            $this->ISBN = $_values['ISBN'];
-            $this->publishYear = clone $_values['publishYear'];
-            $this->authors = $_values['authors'];
-            $this->genres = $_values['genres'];
-            if (isset($_values['description'])) $this->description = $_values['description'];
-            $this->quantity = $_values['quantity'];
-            $this->pagesNumber = $_values['pagesNumber'];
-        }
-        catch (Exception $e) {
-            throw new Exception('Error: bad array configuration '.$e);
-        }
-        
+
+    // Getter and Setter for pagesNum
+    public function getPagesNum(): int {
+        return $this->pagesNum;
     }
-    public function __toString() {
-        $output = str_pad('Title:', 20);
-        $output = $output.$this->getTitle()."\n";
-        $output = $output.str_pad('ISBN:', 20);
-        $output = $output.$this->getISBN()."\n";
-        $output = $output.str_pad('Publish Year:', 20);
-        $output = $output.$this->getPublishYear(1)."\n";
-        foreach ($authors = $this->getAuthors() as $author) {
-            $output = $output.str_pad('Author:', 20);
-            $output = $output.$author."\n";
-        }
-        foreach ($genres = $this->getGenres() as $genre) {
-            $output = $output.str_pad('Genre:', 20);
-            $output = $output.$genre."\n";
-        }
-        if ($this->description != ''){
-            $output = $output.str_pad('Description:', 20);
-            $output = $output.$this->getDescription()."\n";
-        }
-        $output = $output.str_pad('Quantity:', 20);
-        $output = $output.$this->getQuantity()."\n";
-        if ($this->pagesNumber != 0){
-            $output = $output.str_pad('Pages Number:', 20);
-            $output = $output.$this->getPagesNumber()."\n";
-        }
-        return $output;
+
+    public function setPagesNum(int $pagesNum): void {
+        $this->pagesNum = $pagesNum;
+    }
+
+    // Getter and Setter for visibility
+    public function getVisibility(): bool {
+        return $this->visibility;
+    }
+
+    public function setVisibility(bool $visibility): void {
+        $this->visibility = $visibility;
     }
 }
-?>
