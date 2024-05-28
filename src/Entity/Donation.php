@@ -65,4 +65,74 @@ class Donation {
         $this->convalidationDate = $convalidationDate;
         return $this;
     }
+
+    public function getQuantity(): int {
+        return $this->quantity;
+    }
+
+    public function setQuantity(int $quantity): self {
+        $this->quantity = $quantity;
+        return $this;
+    }
+
+    public function getStatus(): string {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function getComment(): string|null {
+        return $this->comment;
+    }
+
+    public function setComment(string $comment): self {
+        $this->comment = $comment;
+        return $this;
+    }
+
+    public function getGiver(): User|null {
+        return $this->giver;
+    }
+
+    public function setGiver(User|null $giver): self {
+        $this->giver = $giver;
+        return $this;
+    }
+
+    public function getBook(): Book|null {
+        return $this->book;
+    }
+
+    public function setBook(Book|null $book): self {
+        $this->book = $book;
+        return $this;
+    }
+
+    public function isPending() {
+        return $this->status == "pending";
+    }
+
+    public function isAccepted() {
+        return $this->status == "accepted";
+    }
+
+    public function isRejected() {
+        return $this->status == "rejected";
+    }
+
+    // Getter and Setter for imageURL
+    public function getImageURL(): string {
+        return $this->imageURL;
+    }
+
+    public function setImageURL(string $imageURL): void {
+        $this->imageURL = $imageURL;
+    }
+
+    public function isLocalUpload() : bool {
+        return !filter_var($this->imageURL, FILTER_VALIDATE_URL);
+    }
 }
