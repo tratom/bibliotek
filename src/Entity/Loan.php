@@ -1,76 +1,106 @@
 <?php
 namespace Bibliotek\Entity;
-use DateTime;
-use eBook;
-use eUser;
-use Exception;
 
-class eLoan{
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 
-    //attributes
+#[ORM\Entity]
+#[ORM\Table(name: 'loans')]
+class Loan {
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private int|null $id = null;
 
-    private DateTime $start;
-    private DateTime $end;
-    private eBook $book;
-    private eUser $reader;
-    private string $review;
+    #[ORM\Column(type: 'date')]
+    private \DateTime $begin;
 
+    #[ORM\Column(type: 'date', nullable:True)]
+    private \DateTime $end;
 
-    //functions
+    #[ORM\Column(type: 'text', nullable: True)]
+    private string|null $review = null;
 
-    public function __construct(Book $_book, User $_reader){
-        $this->start = new DateTime();
-        $this->book = $_book;
-        $this->reader = $_reader;
+    /**
+     * Bidirectional - Many Loans are requested by one User (OWNING SIDE)
+     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'userLoans')]
+    private User|null $reader = null;
+    
+    /**
+     * Bidirectional - Many Loans concerns one Book (OWNING SIDE)
+     */
+    #[ORM\ManyToOne(targetEntity: Book::class, inversedBy: 'bookLoans')]
+    private Book|null $book = null;
+
+    // Getter and Setter for id
+    public function getId(): ?int {
+        return $this->id;
     }
 
-    public function getExpirationDate() : DateTime {
-        $date = $this->start->modify('+15 day');
-        return $date;
+    // Getter and Setter for begin
+    public function getBegin(): \DateTime {
+        return $this->begin;
     }
 
-    public function getStartLoanDate() : DateTime {
-        return $this->start;
+    public function setBegin(\DateTime $begin): self {
+        $this->begin = $begin;
+        return $this;
     }
 
-    public function getEndLoanDate() : DateTime {
+    // Getter and Setter for end
+    public function getEnd(): \DateTime {
         return $this->end;
     }
 
-    public function getReview() : string{
+    public function setEnd(\DateTime $end): self {
+        $this->end = $end;
+        return $this;
+    }
+
+    // Getter and Setter for review
+    public function getReview(): string|null {
         return $this->review;
     }
 
-//this function returns a bool variable for the loan status, TRUE for ended and FALSE for active
-    public function getStatus() : bool {
-        if ( is_null($this->end)){
-            return FALSE;
-        }
-        else {
-            return TRUE;
-        }
+    public function setReview(string $review): self {
+        $this->review = $review;
+        return $this;
     }
 
-    public function getUser() : eUser {
+    // Getter and Setter for reader
+    public function getReader(): ?User {
         return $this->reader;
     }
 
-    public function endLoan() {
-        $this->end = new DateTime();
+    public function setReader(?User $reader): self {
+        $this->reader = $reader;
+        return $this;
     }
 
-    public function addReview(string $_review) {
-        if($_review->strlen() <= 1000){
-            $this->review = $_review;
-        }
-        else{
-            throw new Exception('Error: numbers must be under 1000 charachters');
-        }
-        
-    }
-    
-    public function getBook() : eBook{
+    // Getter and Setter for book
+    public function getBook(): ?Book {
         return $this->book;
     }
 
+    public function setBook(?Book $book): self {
+        $this->book = $book;
+        return $this;
+    }
+
+    public function isActive() : bool {
+        return !isset($this->end);
+    }
+
+    public function getMaxReturnDate() : \DateTime {
+        $end = clone $this->begin;
+        $duration = $this->reader->getMaxLoanDuration();
+        $end->modify("+$duration days");
+        return $end;
+    }
+
+    public function getElapsedDays() : \DateInterval {
+        return $this->end->diff($this->getMaxReturnDate());
+    }
 }
+?>
