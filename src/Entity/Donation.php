@@ -1,102 +1,68 @@
 <?php
 namespace Bibliotek\Entity;
-use DateTime;
-use e_Book;
-use e_User;
-use Exception;
 
-class e_Donation{
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 
-    //attributes
-    private DateTime $presentiationDate;
-    private DateTime $convalidationDate;
-    private e_Book $book;
-    private e_User $giver;
+#[ORM\Entity]
+#[ORM\Table(name: 'donations')]
+class Donation {
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private int|null $id = null;
+
+    #[ORM\Column(name: 'presentation_date', type: 'date')]
+    private \DateTime $presentationDate;
+
+    #[ORM\Column(name: 'convalidation_date', type: 'date', nullable: True)]
+    private \DateTime $convalidationDate;
+
+    #[ORM\Column(type: 'integer')]
     private int $quantity;
-    private bool $status = FALSE; //the default value for status is FALSE, which means that the donation is not approved
-    private string $comment;
 
+    #[ORM\Column(type: 'string')]
+    private string $status = "pending";
 
-    //functions
+    #[ORM\Column(type: 'string', nullable: True)]
+    private string|null $comment = null;
 
-    public function __construct(e_Book $_book, eUser $_user, int $_quantity){
-        $this->book = $_book;
-        $this->giver = $_user;
-        $this->quantity = $_quantity;
-        $this->presentationDate = new DateTime();
+    #[ORM\Column(name: 'image_url', type: 'string')]
+    private string $imageURL;
+
+    /**
+     * Bidirectional - Many Donations are made by one User (OWNING SIDE)
+     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'userDonations')]
+    private User|null $giver = null;
+    
+    /**
+     * Bidirectional - Many Donations concern one Book (OWNING SIDE)
+     */
+    #[ORM\ManyToOne(targetEntity: Book::class, inversedBy: 'bookDonations')]
+    private Book|null $book = null;
+
+    // Getters and Setters
+
+    public function getId(): int|null {
+        return $this->id;
     }
 
-    public function setComment(string $_comment){
-        if($_comment->strlen <= 500){
-            $this->comment = $_comment;
-        }
-        else {
-            throw new Exception('Error: must be under 500 characters');
-        }
-    }
-
-    public function getComment() : string{
-        return $this->comment;
-    }
-
-/* the following function returns diffrent values for the status of the donation: 
-    -if the convalidation date is null, which means that the donation request is not yet been processed by an administrator, returns 0
-    -if the convalidation date is not null and the status is false, it means that the donation request has been declined, returns 1
-    -if the convalidation date is not null and the status is true, it means that the donation request has been accepted, return 2
-*/
-    public function getStatus() : int{
-        if(is_null($this->convalidationDate)){
-            return 0;
-        }
-        elseif($this->status == FALSE){
-            return 1;
-        }
-        elseif($this->status == TRUE){
-            return 2;
-        }
-    }
-
-    public function approve() {
-        $this->convalidationDate = new DateTime();
-        $this->status = TRUE;
-    }
-
-    public function decline() {
-        $this->convalidationDate = new DateTime();
-    }
-
-    public function  setBook(string $_bookTitle, string $_bookISBN, int $_bookYear, string $_bookAuthor, string $_bookGenre, string $_bookDescription, int $_npages){
-        $this->book->title = $_bookTitle;
-        $this->book->ISBN = $_bookISBN;
-        $this->book->publishYear = $_bookYear;
-        $this->book->authors->array_push( $_bookAuthor);
-        $this->book->genres->array_push( $_bookGenre);
-        $this->book->description = $_bookDescription;
-        $this->book->pagesNumber = $_npages;
-    }
-
-    public function getBook() :e_Book{
-        return $this->book;
-    }
-
-    public function setQuantity(int $_quantity){
-        $this->quantity = $_quantity;
-    }
-
-    public function getQuantity() :int {
-        return $this->quantity;
-    }
-
-    public function getGiver():eUser{
-        return $this->giver;
-    }
-
-    public function getPresentationDate():DateTime{
+    public function getPresentationDate(): \DateTime {
         return $this->presentationDate;
     }
 
-    public function getConvalidationDate():DateTime{
+    public function setPresentationDate(\DateTime $presentationDate): self {
+        $this->presentationDate = $presentationDate;
+        return $this;
+    }
+
+    public function getConvalidationDate(): \DateTime {
         return $this->convalidationDate;
     }
 
+    public function setConvalidationDate(\DateTime $convalidationDate): self {
+        $this->convalidationDate = $convalidationDate;
+        return $this;
+    }
 }
