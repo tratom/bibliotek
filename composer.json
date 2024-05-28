@@ -1,0 +1,10 @@
+{
+    "require": {
+        "doctrine/orm": "^3",
+        "doctrine/dbal": "^4"
+    },
+    "autoload": {
+        "psr-0": {"Bibliotek\\": "src/"},
+        "psr-4": {"Bibliotek\\": "src/"}
+    }
+}
