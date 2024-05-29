@@ -36,6 +36,27 @@ $router->get('/loans/book/{book:number}', 'Bibliotek\Controller\Loan::startLoan'
 $router->post('/loans/book/{book:number}/start', 'Bibliotek\Controller\Loan::doLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->get('/loans/{id:number}/end', 'Bibliotek\Controller\Loan::endLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 
+
+/*
+ * Admin
+ */
+$router->group('/admin', function (\League\Route\RouteGroup $router) {
+    /*
+     * Books
+     */
+    $router->get('/books', 'Bibliotek\Controller\Book::newBook');
+    $router->post('/books', 'Bibliotek\Controller\Book::addBook');
+    $router->get('/books/{id:number}/edit', 'Bibliotek\Controller\Book::modifyBook');
+    /*
+     * Donations
+     */
+    $router->get('/donations/manage', 'Bibliotek\Controller\Donation::manageDonations');
+    $router->get('/donations/manage/{id:number}', 'Bibliotek\Controller\Donation::getDonation');
+    $router->post('/donations/manage/{id:number}', 'Bibliotek\Controller\Donation::confirmDonation');
+})
+    ->middleware(new \Bibliotek\Middleware\AuthMiddleware)
+    ->middleware(new \Bibliotek\Middleware\AdminMiddleware);
+
 $response = $router->dispatch($request);
 
 // send the response to the browser
