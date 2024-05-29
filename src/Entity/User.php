@@ -135,4 +135,74 @@ class User {
     public function isAdmin() {
         return $this->role == "admin";
     }
+
+    public static function checkLogin(string $email, string $password): ?self {
+        // Fetch the user by email
+        $user = $GLOBALS['entityManager']->getRepository(self::class)->findOneBy(['email' => $email]);
+
+        // If user is found and password matches, return the user object
+        if ($user && password_verify($password, $user->password)) {
+            return $user;
+        }
+
+        // Return null if no user is found or if password does not match
+        return null;
+    }
+
+    public function getDonations() {
+        return $this->userDonations;
+    }
+
+    public function getDonationsSortedByIdDesc() {
+        $donationsArray = $this->userDonations->toArray();
+
+        usort($donationsArray, function ($a, $b) {
+            return $b->getId() <=> $a->getId();
+        });
+
+        return new ArrayCollection($donationsArray);
+    }
+
+    public function getLoansSortedByIdDesc() {
+        $loansArray = $this->userLoans->toArray();
+
+        usort($loansArray, function ($a, $b) {
+            return $b->getId() <=> $a->getId();
+        });
+
+        return new ArrayCollection($loansArray);
+    }
+
+    public function hasActiveBookLoans(Book $book): bool {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('l')
+            ->from('Bibliotek\Entity\Loan', 'l')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('l.book', ':book'),
+                $qb->expr()->eq('l.reader', ':user'),
+                $qb->expr()->isNull('l.end')
+            ))
+            ->setParameter('book', $book)
+            ->setParameter('user', $this);
+        return count($qb->getQuery()->getResult()) > 0;
+    }
+
+    public function countActiveLoans(): int {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('count(l)')
+            ->from('Bibliotek\Entity\Loan', 'l')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('l.reader', ':user'),
+                $qb->expr()->isNull('l.end')
+            ))
+            ->setParameter('user', $this);
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    public function getMaxReturnDate() : \DateTime {
+        $end = new \DateTime();
+        $duration = $this->getMaxLoanDuration();
+        $end->modify("+$duration days");
+        return $end;
+    }
 }

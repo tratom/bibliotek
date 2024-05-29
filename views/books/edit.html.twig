@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Book{% endblock %}
+
+{% block content %}
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="row row-cards">
+              <div class="col-12">
+                <form class="card" action="/admin/books/{{book.id}}/edit" method="POST" enctype="multipart/form-data">
+                <div class="row row-0">
+                  <div class="col-3">
+                    <!-- Photo -->
+                    <img src="{{book.imageURL}}" class="w-100 h-100 object-cover card-img-start" alt="Beautiful blonde woman relaxing with a can of coke on a tree stump by the beach">
+                  </div>
+                  <div class="col">
+                    <div class="card-body">
+                      <div class="row row-cards">
+                        <div class="col-md-8">
+                          <div class="mb-3">
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" name="title" value="{{book.title}}">
+                          </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                          <div class="mb-3">
+                              <label class="form-label">ISBN-13</label>
+                              <div class="row g-2">
+                                <div class="col">
+                                  <input type="text" class="form-control" id="isbn" name="isbn" value="{{book.isbn}}">
+                                </div>
+                                <div class="col-auto">
+                                  <a href="#" id="searchIsbn" class="btn btn-icon" aria-label="Button">
+                                    <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path><path d="M21 21l-6 -6"></path></svg>
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-8">
+                          <div class="mb-3">
+                            <label class="form-label">Authors (separated by commas)</label>
+                            <input type="text" class="form-control" name="authors" value="{{book.authors}}">
+                          </div>
+                        </div>
+                        <div class="col-sm-3 col-md-2">
+                          <div class="mb-3">
+                            <label class="form-label">Publish year</label>
+                              <div class="row g-2">
+                                  <select name="publishYear" class="form-select">
+                                      <option value="">{{book.publishYear.format('Y')}}</option>
+                                      {% for i in range(1900, 2024) %}
+                                          <option value="{{i}}">{{i}}</option>
+                                      {% endfor %}
+                                  </select>
+                              </div>
+                          </div>
+                        </div>
+                        <div class="col-sm-3 col-md-2">
+                      <div class="mb-3">
+                        <div class="form-label">Cover photo</div>
+                        <input type="file" name="cover" class="form-control">
+                      </div>
+                    </div>
+                        <div class="col-sm-6 col-md-8">
+                          <div class="mb-3">
+                            <label class="form-label">Genres (separated by commas)</label>
+                            <input type="text" class="form-control" name="genres" value="{{book.genres}}">
+                          </div>
+                        </div>
+                        <div class="col-sm-6 col-md-2">
+                          <div class="mb-3">
+                            <label class="form-label">Number of pages</label>
+                            <input type="text" class="form-control" name="pagesNum" value="{{book.pagesNum}}">
+                          </div>
+                        </div>
+                        <div class="col-sm-6 col-md-2">
+                          <div class="mb-3">
+                            <label class="form-label">Quantity</label>
+                            <input type="text" class="form-control" name="quantity" value="{{book.quantity}}">
+                          </div>
+                        </div>
+                        <div class="col-md-12">
+                          <div class="mb-3 mb-0">
+                            <label class="form-label">Description</label>
+                            <textarea rows="5" class="form-control" name="description">{{book.description}}</textarea>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
+                    <div class="card-footer text-end">
+                      <a href="/" class="btn btn-outline-primary">Back</a>
+                      <button type="submit" class="btn btn-primary">Edit</button>
+                    </div>
+                    </div>
+                  </form>
+              </div>
+            </div>
+          </div>
+        </div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+  $(document).ready(function() {
+      $('#searchIsbn').click(function() {
+          // Get the ISBN from the input box
+          var isbn = $('#isbn').val().trim();
+
+          // Ensure the ISBN is not empty
+          if (isbn === '') {
+              alert('Please enter a valid ISBN.');
+              return;
+          }
+
+          // Construct the API URL
+          var apiUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&jscmd=details&format=json`;
+
+          // Make the AJAX request to the Open Library API
+          $.ajax({
+              url: apiUrl,
+              method: 'GET',
+              dataType: 'json',
+              success: function(response) {
+                  // Check if the book details were found
+                  var bookKey = `ISBN:${isbn}`;
+                  if (response[bookKey] && response[bookKey].details) {
+                      var imageUrl = response[bookKey].thumbnail_url.replace("-S", "") || '';
+                      var bookDetails = response[bookKey].details;
+                      fillFormInputs(bookDetails, imageUrl, isbn);
+                  } else {
+                      alert('Book details not found.');
+                  }
+              },
+              error: function() {
+                  alert('An error occurred while fetching the book details.');
+              }
+          });
+      });
+
+      function fillFormInputs(details, imageUrl, isbn) {
+          var title = details.title || '';
+          var authors = details.authors ? details.authors.map(author => author.name).join(', ') : '';
+          var publishDate = details.publish_date || '';
+          var publishYear = publishDate ? publishDate.split(' ')[2] : '';
+          var numberOfPages = details.number_of_pages || '';
+          var genres = details.subjects ? details.subjects.map(subject => subject).join(', ') : '';
+          var description = details.description ? (typeof details.description === 'string' ? details.description : details.description.value) : '';
+
+          $('input[name="title"]').val(title);
+          $('input[name="imageUrl"]').val(imageUrl);
+          $('input[name="isbn"]').val(`${details.isbn_13 || isbn}`);
+          $('input[name="authors"]').val(authors);
+          $('select[name="publishYear"]').val(publishYear);
+          $('input[name="pagesNum"]').val(numberOfPages);
+          $('input[name="genres"]').val(genres);
+          $('textarea[name="description"]').val(description);
+      }
+  });
+</script>
+{% endblock %}

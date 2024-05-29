@@ -131,6 +131,15 @@ class Book {
         $this->pagesNum = $pagesNum;
     }
 
+    // Getter and Setter for imageURL
+    public function getImageURL(): string {
+        return $this->imageURL;
+    }
+
+    public function setImageURL(string $imageURL): void {
+        $this->imageURL = $imageURL;
+    }
+
     // Getter and Setter for visibility
     public function getVisibility(): bool {
         return $this->visibility;
@@ -138,5 +147,38 @@ class Book {
 
     public function setVisibility(bool $visibility): void {
         $this->visibility = $visibility;
+    }
+
+    public function isLocalUpload(): bool {
+        return !filter_var($this->imageURL, FILTER_VALIDATE_URL);
+    }
+
+    public function getAvailability() : int {
+        return $this->quantity - $this->countActiveLoans();
+    }
+
+    public function getReviews(): array {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('l')
+            ->from('Bibliotek\Entity\Loan', 'l')
+            ->where($qb->expr()->andX(
+                $qb->expr()->isNotNull('l.review'),
+                $qb->expr()->eq('l.book', ':book')
+            ))
+            ->setParameter('book', $this)
+            ->orderBy('l.id', 'DESC');
+        return $qb->getQuery()->getResult();
+    }
+
+    public function countActiveLoans(): int {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('count(l)')
+            ->from('Bibliotek\Entity\Loan', 'l')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('l.book', ':book'),
+                $qb->expr()->isNull('l.end')
+            ))
+            ->setParameter('book', $this);
+        return $qb->getQuery()->getSingleScalarResult();
     }
 }
