@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+        <div class="page-body">
+          <div class="container container-tight py-4">
+            <form class="card card-md" action="/donations/search" method="get" autocomplete="off" novalidate="">
+              <div class="card-body">
+                <h2 class="card-title text-center mb-4">Donate a book</h2>
+                <p class="text-secondary mb-4">Before continue, insert the ISBN of the book you'd like to donate.</p>
+                <div class="mb-3">
+                  <input type="text" name="isbn" class="form-control" placeholder="ISBN">
+                </div>
+                <div class="form-footer">
+                  <button type="submit" class="btn btn-primary w-100">
+                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-search"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg>
+                    Search
+                  </a>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+{% endblock %}
