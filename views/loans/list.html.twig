@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Loans{% endblock %}
+
+{% block actions %}
+<div class="col-auto ms-auto d-print-none">
+  <div class="btn-list">
+  {% if user and user.isAdmin() %}
+    <a href="/admin/loans/manage" class="btn btn-outline-warning d-none d-sm-inline-block">
+      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-eye"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
+      View as Admin
+    </a>
+    <a href="/admin/loans/manage" class="btn btn-outline-warning d-sm-none btn-icon">
+      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-eye"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
+    </a>
+  {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="row row-cards">
+              <div class="col-12">
+                <div class="card">
+                  <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                      <thead>
+                        <tr>
+                          <th>Book</th>
+                          <th>Start Date</th>
+                          <th>Maximum Return Date</th>
+                          <th>Actual Return Date</th>
+                          <th>Status</th>
+                          <th class="w-1"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for loan in loans %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex py-1 align-items-center">
+                                        <span class="avatar me-2" style="background-image: url({{ loan.book.imageURL }})"></span>
+                                        <div class="flex-fill">
+                                            <div class="font-weight-medium text-reset" tabindex="-1">{{ loan.book.title }}</div>
+                                            <div class="text-secondary">{{ loan.book.isbn }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ loan.begin.format('Y-m-d') }}</div>
+                                </td>
+                                <td>
+                                    <div>{{ loan.getMaxReturnDate.format('Y-m-d') }}</div>
+                                </td>
+                                <td>
+                                  <div>{% if not loan.isActive %}{{ loan.end.format('Y-m-d') }} ({{loan.getElapsedDays.format('%R%a')}} days){% endif %}</div>
+                                </td>
+                                <td>
+                                    {% if not loan.isActive %}
+                                      <span class="badge bg-secondary me-1"></span> Ended
+                                    {% endif %}
+                                    {% if loan.isActive() %}
+                                      <span class="badge bg-success me-1"></span> Active
+                                    {% endif %}
+                                </td>
+                                <td>
+                                  {% if loan.isActive %}
+                                    <a href="/loans/{{loan.id}}/end" class="text-danger">
+                                      
+                                      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-back-up"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 14l-4 -4l4 -4" /><path d="M5 10h11a4 4 0 1 1 0 8h-1" /></svg>
+                                    </a>
+                                  {% endif %}
+                                  {% if not loan.isActive %}
+                                    {% if loan.review != '' %}
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" aria-label="{{ loan.review }}" data-bs-original-title="{{ loan.review }}">
+                                      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-message"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 9h8" /><path d="M8 13h6" /><path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z" /></svg>
+                                    </span>
+                                    {% else %}
+                                    <a href="/loans/{{loan.id}}/review">
+                                      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-message"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 9h8" /><path d="M8 13h6" /><path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z" /></svg>
+                                    </a>
+                                    {% endif %}
+                                  {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+{% endblock %}
