@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="page-body">
+    <div class="container container-tight py-4">
+      <form class="card card-md" action="/loans/{{loan.id}}/end" method="POST" autocomplete="off" novalidate="">
+        <div class="card-body">
+          <h2 class="card-title text-center mb-4">End loan for {{loan.book.title}}</h2>
+          <p class="text-secondary mb-4 text-center">Are you sure you want to end loan for this book?</p>
+          <div class="form-footer text-center">
+            <a href="/loans" class="btn btn-primary">
+              No, go back
+            </a>
+            <button type="submit" class="btn btn-danger">
+              Yes, end loan
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
