@@ -28,6 +28,14 @@ $router->get('/search', 'Bibliotek\Controller\Book::searchBooks');
 $router->get('/donations', 'Bibliotek\Controller\Donation::listDonations')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->get('/donations/search', 'Bibliotek\Controller\Donation::search')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 
+/*
+ * Loan
+ */
+$router->get('/loans', 'Bibliotek\Controller\Loan::listLoans')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->get('/loans/book/{book:number}', 'Bibliotek\Controller\Loan::startLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->post('/loans/book/{book:number}/start', 'Bibliotek\Controller\Loan::doLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->get('/loans/{id:number}/end', 'Bibliotek\Controller\Loan::endLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+
 $response = $router->dispatch($request);
 
 // send the response to the browser
