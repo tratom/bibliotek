@@ -39,4 +39,69 @@ class Donation {
             $book = $qb->getQuery()->getResult();
             $html = $GLOBALS['twig']->render('donations/completeSearch.html.twig', ['book' => $book, 'isbn' => $isbn]);
         }
+
+        $response = new Response;
+        $response->getBody()->write($html);
+        return $response;
+    }
+
+    public static function manageDonations(ServerRequestInterface $request) : ResponseInterface {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('d')
+            ->from('Bibliotek\Entity\Donation', 'd')
+            // ->where('d.status = :status')
+            // ->setParameter('status', 'pending')
+            ->orderBy('d.id', 'DESC');
+        $donations = $qb->getQuery()->getResult();
+
+        $html = $GLOBALS['twig']->render('donations/admin/manage.html.twig', ['donations' => $donations]);
+
+        $response = new Response;
+        $response->getBody()->write($html);
+        return $response;
+    }
+
+    //metodo chiamabile da amministratore
+    public static function confirmDonation(ServerRequestInterface $request, array $args) : ResponseInterface {
+        $params = $request->getParsedBody();
+        $donation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Donation', $args['id']);
+        if($donation == null) {
+            throw new NotFoundException;
+        }
+        $book = $donation->getBook();
+
+        if (isset($params['approve'])){
+            $donation->setStatus('accepted');
+            $book->setVisibility(True);
+            $book->setQuantity($book->getQuantity()+$donation->getQuantity());
+        } elseif (isset($params['reject'])) {
+            $donation->setStatus('rejected');
+        } else {
+            throw new BadRequestException();
+        }
+        $donation->setConvalidationDate(new \DateTime());
+        $donation->setComment($params['comment']);
+
+        $GLOBALS['entityManager']->persist($donation);
+        $GLOBALS['entityManager']->persist($book);
+        $GLOBALS['entityManager']->flush();
+        
+        $GLOBALS['msg']->info('The donation is now ' . $donation->getStatus());
+        return new RedirectResponse('/admin/donations/manage');
+    }
+
+    public static function getDonation(ServerRequestInterface $request, array $args) : ResponseInterface {
+        $id = $args['id'];
+        $donation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Donation', $id);
+        if ($donation === null) {
+            throw new NotFoundException;
+        }
+
+        $html = $GLOBALS['twig']->render('donations/admin/show.html.twig', ['donation' => $donation]);
+        
+
+        $response = new Response;
+        $response->getBody()->write($html);
+        return $response;
+    }
 }
