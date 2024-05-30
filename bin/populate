@@ -1,0 +1,58 @@
+#!/usr/bin/env php
+<?php
+require __DIR__ . '/../bootstrap.php';
+
+use Bibliotek\Entity\User;
+use Bibliotek\Entity\Book;
+use Faker\Factory;
+
+$entityManager = $GLOBALS['entityManager'];
+$faker = Factory::create("it_IT");
+
+// Create an admin user
+$admin = new User();
+$admin->setName($faker->firstName);
+$admin->setSurname($faker->lastName);
+$admin->setBirthday($faker->dateTimeBetween('-60 years', '-18 years'));
+$admin->setEmail('admin@example.com');
+$admin->setPassword(password_hash('admin', PASSWORD_DEFAULT)); // Use a real password hashing method in a real app
+$admin->setMaxLoanNum(10);
+$admin->setMaxLoanDuration(30);
+$admin->setBanned(false);
+$admin->setReputation(100);
+$admin->setRole('admin');
+$entityManager->persist($admin);
+
+// Create a regular user
+$user = new User();
+$user->setName($faker->firstName);
+$user->setSurname($faker->lastName);
+$user->setBirthday($faker->dateTimeBetween('-60 years', '-18 years'));
+$user->setEmail('user@example.com');
+$user->setPassword(password_hash('user', PASSWORD_DEFAULT)); // Use a real password hashing method in a real app
+$user->setMaxLoanNum(5);
+$user->setMaxLoanDuration(15);
+$user->setBanned(false);
+$user->setReputation(50);
+$user->setRole('user');
+$entityManager->persist($user);
+
+// Create 10 books
+for ($i = 0; $i < 10; $i++) {
+    $book = new Book();
+    $book->setTitle($faker->sentence(3));
+    $book->setIsbn($faker->isbn13);
+    $book->setPublishYear($faker->dateTimeBetween('-30 years', 'now'));
+    $book->setAuthors($faker->name);
+    $book->setGenres($faker->word);
+    $book->setDescription($faker->paragraph);
+    $book->setQuantity($faker->numberBetween(1, 10));
+    $book->setPagesNum($faker->numberBetween(100, 500));
+    $book->setImageURL($faker->imageUrl(400, 800, 'books', true, 'Faker')); // Generates a fake image URL
+    $book->setVisibility(true);
+    $entityManager->persist($book);
+}
+
+$entityManager->flush();
+
+echo "Database populated successfully!\n";

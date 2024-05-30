@@ -1,0 +1,5 @@
+vendor/
+cache/
+templates/tabler/
+dist/bookCover/
+dist/userDonations/

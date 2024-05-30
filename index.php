@@ -59,6 +59,9 @@ $router->group('/admin', function (\League\Route\RouteGroup $router) {
     $router->get('/books', 'Bibliotek\Controller\Book::newBook');
     $router->post('/books', 'Bibliotek\Controller\Book::addBook');
     $router->get('/books/{id:number}/edit', 'Bibliotek\Controller\Book::modifyBook');
+    $router->post('/books/{id:number}/edit', 'Bibliotek\Controller\Book::editBook');
+    $router->get('/books/{id:number}/remove', 'Bibliotek\Controller\Book::removeBook');
+    $router->post('/books/{id:number}/remove', 'Bibliotek\Controller\Book::deletionBook');
     /*
      * Donations
      */
@@ -72,4 +75,4 @@ $router->group('/admin', function (\League\Route\RouteGroup $router) {
 $response = $router->dispatch($request);
 
 // send the response to the browser
-(new Laminas\HttpHandlerRunner\Emitter\SapiEmitter)->emit($response);
+(new Laminas\HttpHandlerRunner\Emitter\SapiEmitter)->emit($response); 
