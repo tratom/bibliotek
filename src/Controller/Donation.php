@@ -94,7 +94,6 @@ class Donation {
         $book->setPagesNum($params['pagesNum']);
         $book->setVisibility(False);
 
-
         // Handle user upload
         $assetsManager = new Assets("bookCover");
         $uploadedFiles = $request->getUploadedFiles();
@@ -125,6 +124,36 @@ class Donation {
         $GLOBALS['entityManager']->flush();
 
         $GLOBALS['msg']->success('Thank you for your donation! It will be approved by an administrator as soon as possible.');
+        return new RedirectResponse('/donations');
+    }
+
+    public static function showDelete(ServerRequestInterface $request, array $args) : ResponseInterface {
+        $user = Auth::currentUser();
+        $donation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Donation', $args['id']);
+        if($donation == null || $donation->getGiver()->getId() != $user->getId()) {
+            throw new NotFoundException;
+        }
+
+        //todo sort DESC
+        $html = $GLOBALS['twig']->render('donations/remove.html.twig', ['donation' => $donation]);
+
+        $response = new Response;
+        $response->getBody()->write($html);
+        return $response;
+    }
+
+    //cancellazione della donazione dall'utente
+    public static function deleteDonation(ServerRequestInterface $request, array $args) : ResponseInterface {
+        $user = Auth::currentUser();
+        $donation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Donation', $args['id']);
+        if($donation == null || $donation->getGiver()->getId() != $user->getId()) {
+            throw new NotFoundException;
+        }
+
+        $GLOBALS['entityManager']->remove($donation);
+        $GLOBALS['entityManager']->flush();
+
+        $GLOBALS['msg']->success('Your donation has been successfully deleted.');
         return new RedirectResponse('/donations');
     }
 
