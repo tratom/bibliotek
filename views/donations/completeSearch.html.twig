@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Donate a book{% endblock %}
+
+{% block content %}
+  {% if book != [] %}
+    {% set book = book[0] %}
+    <div class="page-body">
+          <div class="container-xl">
+            <div class="row row-cards">
+              <div class="col-md-5 col-lg-5">
+                <div class="card">
+                  <div class="row row-0">
+                    <div class="col-3">
+                      <img src="{{ book.imageURL }}" class="w-100 h-100 object-cover card-img-start" alt="">
+                    </div>
+                    <div class="col">
+                      <div class="card-body">
+                        <h2 class="card-title mb-4">{{ book.title }}</h2>
+                        <div class="mb-2">
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-users"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /><path d="M21 21v-2a4 4 0 0 0 -3 -3.85" /></svg>
+                            Authors: <strong>{{ book.authors }}</strong>
+                        </div>
+                        <div class="mb-2">
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-scan"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7v-1a2 2 0 0 1 2 -2h2" /><path d="M4 17v1a2 2 0 0 0 2 2h2" /><path d="M16 4h2a2 2 0 0 1 2 2v1" /><path d="M16 20h2a2 2 0 0 0 2 -2v-1" /><path d="M5 12l14 0" /></svg>
+                            ISBN: <strong>{{ book.ISBN }}</strong>
+                        </div>
+                        <div class="mb-2">
+                            <!-- Download SVG icon from http://tabler-icons.io/i/home -->
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-time"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" /><path d="M18 18m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M15 3v4" /><path d="M7 3v4" /><path d="M3 11h16" /><path d="M18 16.496v1.504l1 1" /></svg>
+                            Published on: <strong>{{ book.publishYear|date('Y') }}</strong>
+                        </div>
+                        <div class="mb-2">
+                            <!-- Download SVG icon from http://tabler-icons.io/i/map-pin -->
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-tools"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 21h4l13 -13a1.5 1.5 0 0 0 -4 -4l-13 13v4" /><path d="M14.5 5.5l4 4" /><path d="M12 8l-5 -5l-4 4l5 5" /><path d="M7 8l-1.5 1.5" /><path d="M16 12l5 5l-4 4l-5 -5" /><path d="M16 17l-1.5 1.5" /></svg>
+                            Genres: <strong>{{ book.genres }}</strong>
+                        </div>
+                        <div class="mb-2">
+                            <!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
+
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-squares"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 10a2 2 0 0 1 2 -2h9a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-9a2 2 0 0 1 -2 -2z" /><path d="M16 8v-3a2 2 0 0 0 -2 -2h-9a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h3" /></svg>
+                            Pages: <strong>{{ book.pagesNum }}</strong>
+                        </div>
+                        <div>
+                            <!-- Download SVG icon from http://tabler-icons.io/i/clock -->
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-info-circle"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
+                            Description: <strong>{{ book.description }}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-7 col-lg-7">
+                <div class="card">
+                  <form class="card card-md" action="/donations/add" method="POST" enctype="multipart/form-data" autocomplete="off" novalidate="">
+                    <div class="card-body row row-cards">
+                      <div class="col-sm-6 col-md-6">
+                        <div class="mb-3">
+                          <div class="form-label">Add quantity and confirm donation</div>
+                          <input type="hidden" name="bookId" value="{{ book.id }}">
+                          <input type="number" name="quantity" class="form-control" placeholder="Quantity">
+                        </div>
+                      </div>
+                      <div class="col-sm-6 col-md-6">
+                        <div class="mb-3">
+                          <div class="form-label">Book status photo</div>
+                          <input type="file" name="statusPhoto" class="form-control">
+                        </div>
+                      </div>
+                      <div class="form-footer">
+                        <button type="submit" class="btn btn-primary w-100">
+                          <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-heart-handshake"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" /><path d="M12 6l-3.293 3.293a1 1 0 0 0 0 1.414l.543 .543c.69 .69 1.81 .69 2.5 0l1 -1a3.182 3.182 0 0 1 4.5 0l2.25 2.25" /><path d="M12.5 15.5l2 2" /><path d="M15 13l2 2" /></svg> 
+                          Donate
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  {% else %}
+    <div class="page-body">
+      <div class="container-xl">
+        <div class="row row-cards">
+          <div class="col-12">
+            <form class="card" action="/donations/add" method="POST" enctype="multipart/form-data">
+                <input type="hidden" class="form-control" id="imageUrl" name="imageUrl">
+                <div class="card-body">
+                  <div class="row row-cards">
+                    <div class="col-md-8">
+                      <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" name="title">
+
+                      </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                      <div class="mb-3">
+                          <label class="form-label">ISBN-13</label>
+                          <div class="row g-2">
+                            <div class="col">
+                              <input type="text" class="form-control" id="isbn" name="isbn" value="{{ isbn }}">
+                            </div>
+                            <div class="col-auto">
+                              <a href="#" class="btn btn-icon" aria-label="Button">
+                                <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path><path d="M21 21l-6 -6"></path></svg>
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-8">
+                      <div class="mb-3">
+                        <label class="form-label">Authors (separated by commas)</label>
+                        <input type="text" class="form-control" name="authors">
+                      </div>
+                    </div>
+                    <div class="col-sm-3 col-md-2">
+                      <div class="mb-3">
+                        <label class="form-label">Publish year</label>
+                          <div class="row g-2">
+                              <select name="publishYear" class="form-select">
+                                  <option value="">Year</option>
+                                  {% for i in range(2024, 1900) %}
+                                      <option value="{{i}}">{{i}}</option>
+                                  {% endfor %}
+                              </select>
+                          </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3 col-md-2">
+                      <div class="mb-3">
+                        <div class="form-label">Cover photo</div>
+                        <input type="file" name="cover" class="form-control">
+                      </div>
+                    </div>
+                    <div class="col-sm-6 col-md-8">
+                      <div class="mb-3">
+                        <label class="form-label">Genres (separated by commas)</label>
+                        <input type="text" class="form-control" name="genres">
+                      </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                      <div class="mb-3">
+                        <label class="form-label">Number of pages</label>
+                        <input type="number" class="form-control" name="pagesNum">
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="mb-3 mb-0">
+                        <label class="form-label">Description</label>
+                        <textarea rows="5" class="form-control" name="description"></textarea>
+                      </div>
+                    </div>
+                    <hr/>
+                    <div class="col-sm-6 col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">How much copies you'd like to donate?</label>
+                        <input type="number" class="form-control" name="quantity" placeholder="Quantity">
+                      </div>
+                    </div>
+                    <div class="col-sm-6 col-md-6">
+                      <div class="mb-3">
+                        <div class="form-label">Book status photo</div>
+                        <input type="file" name="statusPhoto" class="form-control">
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer text-end">
+                  <button type="submit" class="btn btn-primary w-100">
+                      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-heart-handshake"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" /><path d="M12 6l-3.293 3.293a1 1 0 0 0 0 1.414l.543 .543c.69 .69 1.81 .69 2.5 0l1 -1a3.182 3.182 0 0 1 4.5 0l2.25 2.25" /><path d="M12.5 15.5l2 2" /><path d="M15 13l2 2" /></svg> 
+                      Donate
+                    </button>
+                </div>
+              </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function() {
+      if ($('#isbn').val() !== "") {
+          // Get the ISBN from the input box
+          var isbn = $('#isbn').val().trim();
+
+          // Ensure the ISBN is not empty
+          if (isbn === '') {
+              alert('Please enter a valid ISBN.');
+              return;
+          }
+
+          // Construct the API URL
+          var apiUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&jscmd=details&format=json`;
+
+          // Make the AJAX request to the Open Library API
+          $.ajax({
+              url: apiUrl,
+              method: 'GET',
+              dataType: 'json',
+              success: function(response) {
+                  // Check if the book details were found
+                  var bookKey = `ISBN:${isbn}`;
+                  if (response[bookKey] && response[bookKey].details) {
+                      var imageUrl = response[bookKey].thumbnail_url.replace("-S", "") || '';
+                      var bookDetails = response[bookKey].details;
+                      fillFormInputs(bookDetails, imageUrl);
+                  } else {
+                      alert('Book details not found.');
+                  }
+              },
+              error: function() {
+                  alert('An error occurred while fetching the book details.');
+              }
+          });
+      }
+
+      function fillFormInputs(details, imageUrl) {
+          var title = details.title || '';
+          var authors = details.authors ? details.authors.map(author => author.name).join(', ') : '';
+          var publishDate = details.publish_date || '';
+          var publishYear = publishDate ? publishDate.split(' ')[2] : '';
+          var numberOfPages = details.number_of_pages || '';
+          var genres = details.subjects ? details.subjects.map(subject => subject).join(', ') : '';
+          var description = details.description ? (typeof details.description === 'string' ? details.description : details.description.value) : '';
+
+          $('input[name="title"]').val(title);
+          $('input[name="imageUrl"]').val(imageUrl);
+          $('input[name="isbn"]').val(`${details.isbn_13 || isbn}`);
+          $('input[name="authors"]').val(authors);
+          $('select[name="publishYear"]').val(publishYear);
+          $('input[name="pagesNum"]').val(numberOfPages);
+          $('input[name="genres"]').val(genres);
+          $('textarea[name="description"]').val(description);
+      }
+  });
+</script>
+{% endblock %}

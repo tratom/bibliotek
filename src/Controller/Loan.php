@@ -31,7 +31,59 @@ class Loan {
         $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
         if ($loan == null || $loan->getReader()->getId() != $user->getId()) {
             throw new NotFoundException;
-        }}
+        }
+
+        $html = $GLOBALS['twig']->render('loans/end.html.twig', ['loan' => $loan]);
+
+        $response = new Response;
+        $response->getBody()->write($html);
+        return $response;
+    }
+
+    public static function closeLoan(ServerRequestInterface $request, array $args): ResponseInterface {
+        $user = Auth::currentUser();
+        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        if ($loan == null || $loan->getReader()->getId() != $user->getId()) {
+            throw new NotFoundException;
+        }
+        $loan->setEnd(new \DateTime());
+
+        $GLOBALS['entityManager']->persist($loan);
+        $GLOBALS['entityManager']->flush();
+
+        $GLOBALS['msg']->info('Thank you for returning the book!');
+        return new RedirectResponse('/loans');
+    }
+
+    public static function showReviewLoan(ServerRequestInterface $request, array $args): ResponseInterface {
+        $user = Auth::currentUser();
+        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        if ($loan == null || $loan->getReader()->getId() != $user->getId()) {
+            throw new NotFoundException;
+        }
+
+        $html = $GLOBALS['twig']->render('loans/review.html.twig', ['loan' => $loan]);
+
+        $response = new Response;
+        $response->getBody()->write($html);
+        return $response;
+    }
+
+    public static function postReviewLoan(ServerRequestInterface $request, array $args): ResponseInterface {
+        $params = $request->getParsedBody();
+        $user = Auth::currentUser();
+        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        if ($loan == null || $loan->getReader()->getId() != $user->getId()) {
+            throw new NotFoundException;
+        }
+        $loan->setReview($params['review']);
+
+        $GLOBALS['entityManager']->persist($loan);
+        $GLOBALS['entityManager']->flush();
+
+        $GLOBALS['msg']->info('Thank you for leaving a review!');
+        return new RedirectResponse('/loans');
+    }
 
     public static function startLoan(ServerRequestInterface $request, array $args): ResponseInterface {
         $user = Auth::currentUser();
@@ -47,6 +99,7 @@ class Loan {
         $response->getBody()->write($html);
         return $response;
     }
+
 
     public static function doLoan(ServerRequestInterface $request, array $args): ResponseInterface {
         $user = Auth::currentUser();

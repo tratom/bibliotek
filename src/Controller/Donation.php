@@ -45,6 +45,89 @@ class Donation {
         return $response;
     }
 
+    //aggiunge una nuova donazione con inserimento manuale di tutte le info del libro
+    public static function addDonation(ServerRequestInterface $request) : ResponseInterface {
+        $params = $request->getParsedBody();
+
+        if(isset($params['bookId'])){
+            // Get book from id
+            $book = $GLOBALS['entityManager']->find('Bibliotek\Entity\Book', $params['bookId']);
+            // New donation from existing book
+            $donation = new \Bibliotek\Entity\Donation();
+            $donation->setPresentationDate(new \DateTime());
+            $donation->setQuantity($params['quantity']);
+            $donation->setGiver(Auth::currentUser());
+            $donation->setBook($book);
+
+            // Handle user upload
+            $assetsManager = new Assets("userDonations");
+            $uploadedFiles = $request->getUploadedFiles();
+            if (isset($uploadedFiles['statusPhoto']) && $uploadedFiles['statusPhoto']->getSize() != 0) {
+                $statusPhoto = $uploadedFiles['statusPhoto'];
+                $fileName = $assetsManager->uploadFile($statusPhoto);
+                $donation->setImageURL($assetsManager->getRelativeUrl($fileName));
+            } else {
+                throw new BadRequestException;
+            }
+
+            // Save
+            $GLOBALS['entityManager']->persist($donation);
+            $GLOBALS['entityManager']->flush();
+
+            $GLOBALS['msg']->success('Thank you for your donation! It will be approved by an administrator as soon as possible.');
+            return new RedirectResponse('/donations');
+        }
+        // New donation from NON-existing book
+        $donation = new \Bibliotek\Entity\Donation();
+        $donation->setPresentationDate(new \DateTime());
+        $donation->setQuantity($params['quantity']);
+        $donation->setGiver(Auth::currentUser());
+        // Create new book
+        $book = new \Bibliotek\Entity\Book();
+        $book->setTitle($params['title']);
+        $book->setISBN($params['isbn']);
+        $book->setPublishYear(new \DateTime($params['publishYear']));
+        $book->setAuthors($params['authors']);
+        $book->setGenres($params['genres']);
+        $book->setDescription($params['description']);
+        $book->setQuantity(0);
+        $book->setPagesNum($params['pagesNum']);
+        $book->setVisibility(False);
+
+
+        // Handle user upload
+        $assetsManager = new Assets("bookCover");
+        $uploadedFiles = $request->getUploadedFiles();
+        if (isset($uploadedFiles['cover']) && $uploadedFiles['cover']->getSize() != 0) {
+            $cover = $uploadedFiles['cover'];
+            $fileName = $assetsManager->uploadFile($cover);
+            $book->setImageURL($assetsManager->getRelativeUrl($fileName));
+        } elseif ($params['imageUrl'] != "") {
+            $book->setImageURL($params['imageUrl']);
+        } else {
+            $book->setImageURL("https://placehold.co/400x800");
+        }
+
+        $donation->setBook($book);
+
+        $assetsManager = new Assets("userDonations");
+        $uploadedFiles = $request->getUploadedFiles();
+        if (isset($uploadedFiles['statusPhoto']) && $uploadedFiles['statusPhoto']->getSize() != 0) {
+            $statusPhoto = $uploadedFiles['statusPhoto'];
+            $fileName = $assetsManager->uploadFile($statusPhoto);
+            $donation->setImageURL($assetsManager->getRelativeUrl($fileName));
+        } else {
+            throw new BadRequestException;
+        }
+
+        $GLOBALS['entityManager']->persist($book);
+        $GLOBALS['entityManager']->persist($donation);
+        $GLOBALS['entityManager']->flush();
+
+        $GLOBALS['msg']->success('Thank you for your donation! It will be approved by an administrator as soon as possible.');
+        return new RedirectResponse('/donations');
+    }
+
     public static function manageDonations(ServerRequestInterface $request) : ResponseInterface {
         $qb = $GLOBALS['entityManager']->createQueryBuilder();
         $qb->select('d')
@@ -98,7 +181,6 @@ class Donation {
         }
 
         $html = $GLOBALS['twig']->render('donations/admin/show.html.twig', ['donation' => $donation]);
-        
 
         $response = new Response;
         $response->getBody()->write($html);

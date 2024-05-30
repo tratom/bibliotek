@@ -27,6 +27,7 @@ $router->get('/search', 'Bibliotek\Controller\Book::searchBooks');
  */
 $router->get('/donations', 'Bibliotek\Controller\Donation::listDonations')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->get('/donations/search', 'Bibliotek\Controller\Donation::search')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->post('/donations/add', 'Bibliotek\Controller\Donation::addDonation')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 
 /*
  * Loan
@@ -35,7 +36,18 @@ $router->get('/loans', 'Bibliotek\Controller\Loan::listLoans')->middleware(new \
 $router->get('/loans/book/{book:number}', 'Bibliotek\Controller\Loan::startLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->post('/loans/book/{book:number}/start', 'Bibliotek\Controller\Loan::doLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->get('/loans/{id:number}/end', 'Bibliotek\Controller\Loan::endLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->post('/loans/{id:number}/end', 'Bibliotek\Controller\Loan::closeLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->get('/loans/{id:number}/review', 'Bibliotek\Controller\Loan::showReviewLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->post('/loans/{id:number}/review', 'Bibliotek\Controller\Loan::postReviewLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 
+
+/*
+ * User
+ */
+$router->get('/login', 'Bibliotek\Controller\User::getLogin');
+$router->post('/login', 'Bibliotek\Controller\User::doLogin');
+// user must be logged in to logout
+$router->get('/logout', 'Bibliotek\Controller\User::doLogout')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 
 /*
  * Admin
