@@ -28,8 +28,6 @@ $router->get('/search', 'Bibliotek\Controller\Book::searchBooks');
 $router->get('/donations', 'Bibliotek\Controller\Donation::listDonations')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->get('/donations/search', 'Bibliotek\Controller\Donation::search')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->post('/donations/add', 'Bibliotek\Controller\Donation::addDonation')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
-$router->get('/donations/{id:number}/remove', 'Bibliotek\Controller\Donation::showDelete')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
-$router->post('/donations/{id:number}/remove', 'Bibliotek\Controller\Donation::deleteDonation')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 
 /*
  * Loan
@@ -56,11 +54,21 @@ $router->get('/logout', 'Bibliotek\Controller\User::doLogout')->middleware(new \
  */
 $router->group('/admin', function (\League\Route\RouteGroup $router) {
     /*
+     * Users
+     */
+    $router->get('/users', 'Bibliotek\Controller\User::listUsers');
+    $router->get('/users/{id:number}', 'Bibliotek\Controller\User::showUser');
+    $router->get('/users/add', 'Bibliotek\Controller\User::showAddUser');
+    $router->post('/users/add', 'Bibliotek\Controller\User::addUser');
+    /*
      * Books
      */
     $router->get('/books', 'Bibliotek\Controller\Book::newBook');
     $router->post('/books', 'Bibliotek\Controller\Book::addBook');
     $router->get('/books/{id:number}/edit', 'Bibliotek\Controller\Book::modifyBook');
+    $router->post('/books/{id:number}/edit', 'Bibliotek\Controller\Book::editBook');
+    $router->get('/books/{id:number}/remove', 'Bibliotek\Controller\Book::removeBook');
+    $router->post('/books/{id:number}/remove', 'Bibliotek\Controller\Book::deletionBook');
     /*
      * Donations
      */
