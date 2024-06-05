@@ -48,6 +48,9 @@ $router->get('/login', 'Bibliotek\Controller\User::getLogin');
 $router->post('/login', 'Bibliotek\Controller\User::doLogin');
 // user must be logged in to logout
 $router->get('/logout', 'Bibliotek\Controller\User::doLogout')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->get('/settings', 'Bibliotek\Controller\User::getSettings')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->post('/settings', 'Bibliotek\Controller\User::updateSettings')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+
 
 /*
  * Admin
@@ -60,6 +63,11 @@ $router->group('/admin', function (\League\Route\RouteGroup $router) {
     $router->get('/users/{id:number}', 'Bibliotek\Controller\User::showUser');
     $router->get('/users/add', 'Bibliotek\Controller\User::showAddUser');
     $router->post('/users/add', 'Bibliotek\Controller\User::addUser');
+    $router->get('/users/{id:number}/edit', 'Bibliotek\Controller\User::adminShowEdit');
+    $router->post('/users/{id:number}/edit', 'Bibliotek\Controller\User::adminEdit');
+    $router->get('/users/{id:number}/delete', 'Bibliotek\Controller\User::adminShowDelete');
+    $router->post('/users/{id:number}/delete', 'Bibliotek\Controller\User::adminDelete');
+    
     /*
      * Books
      */
@@ -83,3 +91,4 @@ $response = $router->dispatch($request);
 
 // send the response to the browser
 (new Laminas\HttpHandlerRunner\Emitter\SapiEmitter)->emit($response);
+in index.php

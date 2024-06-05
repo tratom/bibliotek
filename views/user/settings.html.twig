@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}My settings{% endblock %}
+
+{% block content %}
+  <div class="container-xl">
+    <div class="card mt-2">
+      <div class="row g-0">
+        <div class="col-12 col-md-12 d-flex flex-column">
+          <form action="/settings" method="POST">
+            <div class="card-body">
+              <h3 class="card-title mt-2">Details</h3>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control" name="name" value="{{user.getName()}}">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Surname</label>
+                    <input type="text" class="form-control" name="surname" value="{{user.getSurname()}}">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="text" class="form-control" name="email" value="{{user.getEmail()}}">
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="input-icon mb-3">
+                    <label class="form-label">Birthday</label>
+                    <input class="form-control" placeholder="Birthday date" name="birthday" id="datepicker-icon" value="{{user.getBirthday().format('Y-m-d')}}">
+                    <span class="input-icon-addon">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewbox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"></path>
+                        <path d="M16 3v4"></path>
+                        <path d="M8 3v4"></path>
+                        <path d="M4 11h16"></path>
+                        <path d="M11 15h1"></path>
+                        <path d="M12 15v3"></path>
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <h3 class="card-title mt-4">Password</h3>
+              <p class="card-subtitle">You can update your current password, but it's optional.</p>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label class="form-label">Current password</label>
+                    <input type="password" class="form-control" name="currentPassword">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label class="form-label">New password</label>
+                    <input type="password" class="form-control" name="newPassword">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label class="form-label">Confirm new password</label>
+                    <input type="password" class="form-control" name="confirmNewPassword">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer bg-transparent mt-auto">
+              <div class="btn-list justify-content-end">
+                <a href="/" class="btn">
+                  Return to home
+                </a>
+                <button type="submit" class="btn btn-primary">
+                  Update profile
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+in views/user/settings.html.twig
