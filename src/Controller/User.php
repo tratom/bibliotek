@@ -336,4 +336,3 @@ class User {
         return new RedirectResponse('/admin/users', 302);
     }
 }
-in controller\user

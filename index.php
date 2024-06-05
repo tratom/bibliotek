@@ -91,4 +91,3 @@ $response = $router->dispatch($request);
 
 // send the response to the browser
 (new Laminas\HttpHandlerRunner\Emitter\SapiEmitter)->emit($response);
-in index.php
