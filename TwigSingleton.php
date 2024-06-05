@@ -22,6 +22,14 @@ class TwigSingleton {
         $this->twig->addFunction(new TwigFunction('CurrentURI', function() {
             return $_SERVER["REQUEST_URI"];
         }));
+        $this->twig->addFilter(new TwigFilter('ellipsis', function($text, $maxLen = 50, $ellipsis = '...') {
+            if ( strlen($text) <= $maxLen)
+                return $text;
+            return substr($text, 0, $maxLen-3).$ellipsis;
+        }));
+        $this->twig->addFunction(new TwigFunction('displayMessages', function() {
+            return $GLOBALS['msg']->display();
+        }));
     }
 
     public static function getInstance() {

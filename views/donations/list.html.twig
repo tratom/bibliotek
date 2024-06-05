@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Donations{% endblock %}
+
+{% block actions %}
+<div class="col-auto ms-auto d-print-none">
+  <div class="btn-list">
+  {% if user and user.isAdmin() %}
+    <a href="/admin/donations/manage" class="btn btn-outline-warning d-none d-sm-inline-block">
+      <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
+      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-edit"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
+      Manage as Admin
+    </a>
+    <a href="/admin/donations/manage" class="btn btn-outline-warning d-sm-none btn-icon">
+      <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
+      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-edit"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
+    </a>
+  {% endif %}
+    <a href="/donations/search" class="btn btn-primary d-none d-sm-inline-block">
+      <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>
+      Add donation
+    </a>
+    <a href="/donations/search" class="btn btn-primary d-sm-none btn-icon">
+      <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="row row-cards">
+              <div class="col-12">
+                <div class="card">
+                  <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                      <thead>
+                        <tr>
+                          <th>Book</th>
+                          <th>Quantity</th>
+                          <th>Presentation</th>
+                          <th>Convalidation</th>
+                          <th>Status</th>
+                          <th class="w-1"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for donation in donations %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex py-1 align-items-center">
+                                        <span class="avatar me-2" style="background-image: url({{ donation.book.imageURL }})"></span>
+                                        <div class="flex-fill">
+                                            <div class="font-weight-medium text-reset" tabindex="-1">{{ donation.book.title }}</div>
+                                            <div class="text-secondary">{{ donation.book.isbn }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ donation.quantity }}</div>
+                                </td>
+                                <td>
+                                    <div>{{ donation.presentationDate.format('Y-m-d') }}</div>
+                                </td>
+                                <td>
+                                    {% if not donation.isPending() %}
+                                      <div>{{ donation.convalidationDate.format('Y-m-d') }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if donation.isPending() %}
+                                      <span class="badge bg-secondary me-1"></span> Pending
+                                    {% endif %}
+                                    {% if donation.isAccepted() %}
+                                      <span class="badge bg-success me-1"></span> Accepted
+                                    {% endif %}
+                                    {% if donation.isRejected() %}
+                                      <span class="badge bg-danger me-1"></span> Rejected
+                                    {% endif %}
+                                </td>
+                                <td>
+                                  {% if donation.isPending() %}
+                                    <a href="/donations/{{donation.id}}/remove" class="text-danger">
+                                      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+                                    </a>
+                                  {% endif %}
+                                  {% if donation.comment != '' %}
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" aria-label="{{ donation.comment }}" data-bs-original-title="{{ donation.comment }}">
+                                      <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-message"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 9h8" /><path d="M8 13h6" /><path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z" /></svg>
+                                    </span>
+                                  {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+{% endblock %}
