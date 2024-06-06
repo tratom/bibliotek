@@ -4,10 +4,30 @@ require __DIR__ . '/../bootstrap.php';
 
 use Bibliotek\Entity\User;
 use Bibliotek\Entity\Book;
+use Bibliotek\Entity\Loan;
+use Bibliotek\Entity\Reservation;
+use Bibliotek\Entity\Donation;
 use Faker\Factory;
 
 $entityManager = $GLOBALS['entityManager'];
 $faker = Factory::create("it_IT");
+
+// Function to fetch real book data from Google Books API for a specific genre
+function fetchBookData($genre) {
+    $url = 'https://www.googleapis.com/books/v1/volumes?q=' . urlencode($genre) . '&maxResults=40';
+    $json = file_get_contents($url);
+    $data = json_decode($json, true);
+    return $data['items'] ?? [];
+}
+
+// List of genres to fetch books from
+$genres = ['fiction', 'non-fiction', 'fantasy', 'technology', 'mystery', 'romance', 'horror', 'biography', 'history', 'children', 'php'];
+
+// Fetch book data for each genre
+$booksData = [];
+foreach ($genres as $genre) {
+    $booksData = array_merge($booksData, fetchBookData($genre));
+}
 
 // Create an admin user
 $admin = new User();
@@ -23,34 +43,82 @@ $admin->setReputation(100);
 $admin->setRole('admin');
 $entityManager->persist($admin);
 
-// Create a regular user
-$user = new User();
-$user->setName($faker->firstName);
-$user->setSurname($faker->lastName);
-$user->setBirthday($faker->dateTimeBetween('-60 years', '-18 years'));
-$user->setEmail('user@example.com');
-$user->setPassword(password_hash('user', PASSWORD_DEFAULT)); // Use a real password hashing method in a real app
-$user->setMaxLoanNum(5);
-$user->setMaxLoanDuration(15);
-$user->setBanned(false);
-$user->setReputation(50);
-$user->setRole('user');
-$entityManager->persist($user);
+// Create 5 regular users
+$users = [];
+for ($i = 0; $i < 5; $i++) {
+    $user = new User();
+    $user->setName($faker->firstName);
+    $user->setSurname($faker->lastName);
+    $user->setBirthday($faker->dateTimeBetween('-60 years', '-18 years'));
+    $user->setEmail($faker->email);
+    $user->setPassword(password_hash('user', PASSWORD_DEFAULT)); // Use a real password hashing method in a real app
+    $user->setMaxLoanNum(5);
+    $user->setMaxLoanDuration(15);
+    $user->setBanned(false);
+    $user->setReputation(50);
+    $user->setRole('user');
+    $entityManager->persist($user);
+    $users[] = $user;
+}
 
-// Create 10 books
-for ($i = 0; $i < 10; $i++) {
+// Create 20 books from the fetched data
+$books = [];
+for ($i = 0; $i < 20 && $i < count($booksData); $i++) {
+    $bookData = $booksData[$i]['volumeInfo'];
     $book = new Book();
-    $book->setTitle($faker->sentence(3));
-    $book->setIsbn($faker->isbn13);
-    $book->setPublishYear($faker->dateTimeBetween('-30 years', 'now'));
-    $book->setAuthors($faker->name);
-    $book->setGenres($faker->word);
-    $book->setDescription($faker->paragraph);
-    $book->setQuantity($faker->numberBetween(1, 10));
-    $book->setPagesNum($faker->numberBetween(100, 500));
-    $book->setImageURL($faker->imageUrl(400, 800, 'books', true, 'Faker')); // Generates a fake image URL
+    $book->setTitle($bookData['title'] ?? $faker->sentence(5));
+    $book->setIsbn($bookData['industryIdentifiers'][0]['identifier'] ?? $faker->isbn13);
+    $book->setPublishYear(new \DateTime($bookData['publishedDate'] ?? $faker->date()));
+    $book->setAuthors(implode(', ', $bookData['authors'] ?? [$faker->name]));
+    $book->setGenres(implode(', ', $bookData['categories'] ?? [$faker->word]));
+    $book->setDescription($bookData['description'] ?? $faker->paragraph(50));
+    $book->setQuantity($faker->numberBetween(0, 10));
+    $book->setPagesNum($bookData['pageCount'] ?? $faker->numberBetween(100, 500));
+    $book->setImageURL($bookData['imageLinks']['thumbnail'] ?? $faker->imageUrl(400, 800, 'books', false, $book->getTitle()));
     $book->setVisibility(true);
     $entityManager->persist($book);
+    $books[] = $book;
+}
+
+// Create loans, reservations, and donations for each user (including admin)
+$allUsers = array_merge([$admin], $users);
+foreach ($allUsers as $user) {
+    // Create loans
+    $loanCount = $faker->numberBetween(0, 3);
+    for ($j = 0; $j < $loanCount; $j++) {
+        $loan = new Loan();
+        $loan->setReader($user);
+        $loan->setBook($faker->randomElement($books));
+        $loan->setBegin($faker->dateTimeBetween('-1 year', 'now'));
+        $end = $faker->optional()->dateTimeBetween($loan->getBegin(), 'now');
+        if($end !== null) {
+            $loan->setEnd($end);
+            $loan->setReview($faker->paragraph($faker->numberBetween(5, 20)));
+        }
+        $entityManager->persist($loan);
+    }
+
+    // Create reservations
+    $reservationCount = $faker->numberBetween(0, 5);
+    for ($j = 0; $j < $reservationCount; $j++) {
+        $reservation = new Reservation();
+        $reservation->setUser($user);
+        $reservation->setBook($faker->randomElement($books));
+        $reservation->setReservationDate($faker->dateTimeBetween('-6 months', 'now'));
+        $entityManager->persist($reservation);
+    }
+
+    // Create donations
+    $donationCount = $faker->numberBetween(0, 5);
+    for ($j = 0; $j < $donationCount; $j++) {
+        $donation = new Donation();
+        $donation->setGiver($user);
+        $donation->setBook($faker->randomElement($books));
+        $donation->setPresentationDate($faker->dateTimeBetween('-2 years', 'now'));
+        $donation->setQuantity($faker->numberBetween(1, 5));
+        $donation->setImageURL($faker->imageUrl(400, 800, 'donation', false, $donation->getBook()->getTitle())); // Generates a fake image URL
+        $entityManager->persist($donation);
+    }
 }
 
 $entityManager->flush();

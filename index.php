@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require_once "bootstrap.php";
 
+use Bibliotek\Utility\ExceptionHandlerStategy;
+
 $request = Laminas\Diactoros\ServerRequestFactory::fromGlobals(
     $_SERVER,
     $_GET,
@@ -13,6 +15,18 @@ $request = Laminas\Diactoros\ServerRequestFactory::fromGlobals(
 );
 
 $router = new League\Route\Router;
+// Set how we manage HTTP errors
+$router->setStrategy(new ExceptionHandlerStategy);
+
+/*
+ * User
+ */
+$router->get('/login', 'Bibliotek\Controller\User::getLogin');
+$router->post('/login', 'Bibliotek\Controller\User::doLogin');
+// user must be logged in to logout
+$router->get('/logout', 'Bibliotek\Controller\User::doLogout')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->get('/settings', 'Bibliotek\Controller\User::getSettings')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->post('/settings', 'Bibliotek\Controller\User::updateSettings')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 
 /*
  * Books
@@ -20,7 +34,6 @@ $router = new League\Route\Router;
 $router->get('/', 'Bibliotek\Controller\Book::listBooks');
 $router->get('/books/{id:number}', 'Bibliotek\Controller\Book::getBook');
 $router->get('/search', 'Bibliotek\Controller\Book::searchBooks');
-
 
 /*
  * Donations
@@ -47,22 +60,12 @@ $router->post('/loans/book/{id:number}/reserve', 'Bibliotek\Controller\Reservati
 $router->post('/loans/book/{id:number}/reserve/{reservationId:number}', 'Bibliotek\Controller\Reservation::reserve')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->post('/loans/book/{id:number}/reserve/{reservationId:number}/cancel', 'Bibliotek\Controller\Reservation::cancel')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 
-
-/*
- * User
- */
-$router->get('/login', 'Bibliotek\Controller\User::getLogin');
-$router->post('/login', 'Bibliotek\Controller\User::doLogin');
-// user must be logged in to logout
-$router->get('/logout', 'Bibliotek\Controller\User::doLogout')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
-$router->get('/settings', 'Bibliotek\Controller\User::getSettings')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
-$router->post('/settings', 'Bibliotek\Controller\User::updateSettings')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
-
-
 /*
  * Admin
  */
 $router->group('/admin', function (\League\Route\RouteGroup $router) {
+    $router->get('/stats', 'Bibliotek\Controller\Stats::show');
+
     /*
      * Users
      */
@@ -90,6 +93,12 @@ $router->group('/admin', function (\League\Route\RouteGroup $router) {
     $router->get('/donations/manage', 'Bibliotek\Controller\Donation::manageDonations');
     $router->get('/donations/manage/{id:number}', 'Bibliotek\Controller\Donation::getDonation');
     $router->post('/donations/manage/{id:number}', 'Bibliotek\Controller\Donation::confirmDonation');
+    /*
+     * Loans
+     */
+    $router->get('/loans/manage', 'Bibliotek\Controller\Loan::manageLoans');
+    $router->get('/loans/manage/{id:number}/return', 'Bibliotek\Controller\Loan::earlyReturnLoan');
+    $router->get('/loans/reservation/manage', 'Bibliotek\Controller\Reservation::manage');
 })
     ->middleware(new \Bibliotek\Middleware\AuthMiddleware)
     ->middleware(new \Bibliotek\Middleware\AdminMiddleware);

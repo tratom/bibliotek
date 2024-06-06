@@ -5,6 +5,7 @@ namespace Bibliotek\Controller;
 use Bibliotek\Entity\Loan as EntityLoan;
 use Bibliotek\Utility\Assets;
 use Bibliotek\Utility\Auth;
+use Bibliotek\Utility\Email;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Laminas\Diactoros\Response;
@@ -18,8 +19,8 @@ class Loan {
     public static function listLoans(ServerRequestInterface $request): ResponseInterface {
         $user = Auth::currentUser();
         $loans = $user->getLoansSortedByIdDesc();
-        //todo sort DESC
-        $html = $GLOBALS['twig']->render('loans/list.html.twig', ['loans' => $loans]);
+        $reservations = $user->getActiveReservations();
+        $html = $GLOBALS['twig']->render('loans/list.html.twig', ['loans' => $loans, 'reservations' => $reservations]);
 
         $response = new Response;
         $response->getBody()->write($html);
@@ -50,6 +51,30 @@ class Loan {
 
         $GLOBALS['entityManager']->persist($loan);
         $GLOBALS['entityManager']->flush();
+
+        $reservations = $loan->getBook()->getActiveReservations();
+        if(!empty($reservations)){
+            $firstReservation = $reservations[0];
+            $u = $firstReservation->getUser();
+            $email = new Email();
+            $email->new(
+                $u->getEmail(),
+                "You can now loan {$firstReservation->getBook()->getTitle()}.",
+                "Dear {$u->getName()},\nyou're receiving this notification because you're the first in the queue for the book {$firstReservation->getBook()->getTitle()}.\n
+                You can now loan this book from your personal loans page! Remember, you can loan it until tomorrow."
+            );
+            $email->send();
+        }
+
+        // Send email to user
+        $user = $loan->getReader();
+        $email = new Email();
+        $email->new(
+            $user->getEmail(),
+            "Your loan has ended.",
+            "Dear {$user->getName()},\nyour loan on Bibliotek has ended.\nThank you for returning {$loan->getBook()->getTitle()}."
+        );
+        $email->send();
 
         $GLOBALS['msg']->info('Thank you for returning the book!');
         return new RedirectResponse('/loans');
@@ -100,7 +125,6 @@ class Loan {
         return $response;
     }
 
-
     public static function doLoan(ServerRequestInterface $request, array $args): ResponseInterface {
         $user = Auth::currentUser();
         $book = $GLOBALS['entityManager']->find('Bibliotek\Entity\Book', $args['book']);
@@ -133,7 +157,79 @@ class Loan {
         $GLOBALS['entityManager']->persist($loan);
         $GLOBALS['entityManager']->flush();
 
+        // Send email to user
+        $user = $loan->getReader();
+        $email = new Email();
+        $email->new(
+            $user->getEmail(),
+            "Your loan has started.",
+            "Dear {$user->getName()},\nyour loan for book \"{$loan->getBook()->getTitle()}\" on Bibliotek has started.\nThank you."
+        );
+        $email->send();
+
         $GLOBALS['msg']->success('The book has been borrowed!');
         return new RedirectResponse('/loans');
+    }
+
+    public static function postponeLoan(ServerRequestInterface $request, array $args): ResponseInterface {
+        $user = Auth::currentUser();
+        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        if ($loan == null || $loan->getReader()->getId() != $user->getId()) {
+            throw new NotFoundException;
+        }
+
+        // Check if book has active reservations
+        if($loan->getBook()->countActiveReservations() > 0) {
+            $GLOBALS['msg']->error('The book has active reservations, the loan can\'t be postponed!');
+            return new RedirectResponse('/loans');
+        }
+
+        $userMaxDuration = $loan->getReader()->getMaxLoanDuration();
+        $newBegin = clone $loan->getBegin()->modify("+$userMaxDuration days");
+        $loan->setBegin($newBegin);
+
+        $GLOBALS['entityManager']->persist($loan);
+        $GLOBALS['entityManager']->flush();
+
+        $GLOBALS['msg']->info("The loan has been postponed by {$userMaxDuration} days!");
+        return new RedirectResponse('/loans');
+    }
+
+    /*
+     * Admin
+     */
+
+    public static function manageLoans(ServerRequestInterface $request): ResponseInterface {
+        $loans = $GLOBALS['entityManager']->getRepository('Bibliotek\Entity\Loan')->findAll();
+        // $reservations = $user->getActiveReservations();
+        $reservations = $GLOBALS['entityManager']->getRepository('Bibliotek\Entity\Reservation')->findAll();
+        $html = $GLOBALS['twig']->render('loans/admin/list.html.twig', ['loans' => $loans, 'reservations' => $reservations]);
+
+        $response = new Response;
+        $response->getBody()->write($html);
+        return $response;
+    }
+
+    public static function earlyReturnLoan(ServerRequestInterface $request, array $args): ResponseInterface {
+        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        if ($loan == null) {
+            throw new NotFoundException;
+        }
+
+        // Send email to user
+        $user = $loan->getReader();
+        $email = new Email();
+        $email->new(
+            $user->getEmail(),
+            "Early return of book.",
+            "Dear {$user->getName()},\n
+            early return of the book you have on loan {$loan->getBook()->getTitle()} has been requested.
+            We ask you to return it as soon as possible.
+            Thank you."
+        );
+        $email->send();
+
+        $GLOBALS['msg']->success('Early return of the book has been requested.');
+        return new RedirectResponse('/admin/loans/manage');
     }
 }
