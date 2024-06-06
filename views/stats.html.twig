@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics
+{% endblock %}
+
+{% block actions %}
+	<div class="ms-auto lh-1">
+		<div class="dropdown">
+			<a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Last {% if last == "7d" %}7 days{% endif %}{% if last == "30d" %}30 days{% endif %}{% if last == "90d" %}90 days{% endif %}
+            </a>
+			<div class="dropdown-menu dropdown-menu-end">
+				<a class="dropdown-item {% if last == "7d" %}active{% endif %}" href="?last=7d">Last 7 days</a>
+				<a class="dropdown-item {% if last == "30d" %}active{% endif %}" href="?last=30d">Last 30 days</a>
+				<a class="dropdown-item {% if last == "90d" %}active{% endif %}" href="?last=90d">Last 3 months</a>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block content %}
+	<div class="container-xl mt-4">
+		<div class="row row-deck row-cards">
+             <!-- Total book -->
+            <div class="col-sm-6 col-lg-6">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="subheader">Total books</div>
+						</div>
+						<div class="d-flex align-items-baseline">  
+							<div class="h1 mb-0 me-2">{{ totalBooks }}</div>
+						</div>
+					</div>
+				</div>
+			</div>
+            <!-- Total users -->
+            <div class="col-sm-6 col-lg-6">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="subheader">Total users</div>
+						</div>
+						<div class="d-flex align-items-baseline">  
+							<div class="h1 mb-0 me-2">{{ totalUsers }}</div>
+						</div>
+					</div>
+				</div>
+			</div>
+            <!-- Total loans -->
+			<div class="col-sm-6 col-lg-6">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="subheader">Total loans</div>
+						</div>
+						<div class="d-flex align-items-baseline">
+                            {% set totalLoans = 0 %}    
+                            {% for l in loansPerDay %}            
+                            {% set totalLoans = totalLoans + l %}        
+                            {% endfor %}    
+							<div class="h1 mb-0 me-2">{{ totalLoans }}</div>
+						</div>
+					</div>
+					<div id="chart-total-loans" class="chart-sm" style="min-height: 40px;"></div>
+				</div>
+			</div>
+            <!-- Active loans -->
+            <div class="col-sm-6 col-lg-6">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="subheader">Active loans</div>
+						</div>
+						<div class="d-flex align-items-baseline">
+                            {% set activeLoans = 0 %}    
+                            {% for l in activeLoansPerDay %}            
+                            {% set activeLoans = activeLoans + l %}        
+                            {% endfor %}    
+							<div class="h1 mb-0 me-2">{{ activeLoans }}</div>
+						</div>
+					</div>
+					<div id="chart-active-loans" class="chart-sm" style="min-height: 40px;"></div>
+				</div>
+			</div>
+            <!-- Total donations -->
+            <div class="col-sm-6 col-lg-6">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="subheader">Total donations</div>
+						</div>
+						<div class="d-flex align-items-baseline">
+                            {% set totalDonations = 0 %}    
+                            {% for l in donationsPerDay %}            
+                            {% set totalDonations = totalDonations + l %}        
+                            {% endfor %}    
+							<div class="h1 mb-0 me-2">{{ totalDonations }}</div>
+						</div>
+					</div>
+					<div id="chart-total-donations" class="chart-sm" style="min-height: 40px;"></div>
+				</div>
+			</div>
+            <!-- Active donations -->
+            <div class="col-sm-6 col-lg-6">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="subheader">Pending donations</div>
+						</div>
+						<div class="d-flex align-items-baseline">
+                            {% set activeDonations = 0 %}    
+                            {% for l in activeDonationsPerDay %}            
+                            {% set activeDonations = activeDonations + l %}        
+                            {% endfor %}    
+							<div class="h1 mb-0 me-2">{{ activeDonations }}</div>
+						</div>
+					</div>
+					<div id="chart-active-donations" class="chart-sm" style="min-height: 40px;"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block scripts %}
+	<script src="./dist/libs/apexcharts/dist/apexcharts.min.js?1695847769" defer></script>
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+window.ApexCharts && (new ApexCharts(document.getElementById('chart-total-loans'), {
+chart: {
+type: "area",
+fontFamily: 'inherit',
+height: 40.0,
+sparkline: {
+enabled: true
+},
+animations: {
+enabled: false
+}
+},
+dataLabels: {
+enabled: false
+},
+fill: {
+opacity: .16,
+type: 'solid'
+},
+stroke: {
+width: 2,
+lineCap: "round",
+curve: "smooth"
+},
+series: [
+{
+name: "",
+data: [// todo
+{% for key, val in loansPerDay %}
+{{ val }},{% endfor %}]
+}
+],
+tooltip: {
+theme: 'dark'
+},
+grid: {
+strokeDashArray: 4
+},
+xaxis: {
+labels: {
+padding: 0
+},
+tooltip: {
+enabled: false
+},
+axisBorder: {
+show: false
+},
+type: 'datetime'
+},
+yaxis: {
+labels: {
+padding: 4
+}
+},
+labels: [{% for key, val in loansPerDay %}
+'{{ key }}',{% endfor %}],
+colors: [tabler.getColor("primary")],
+legend: {
+show: false
+}
+})).render();
+});
+	</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+window.ApexCharts && (new ApexCharts(document.getElementById('chart-active-loans'), {
+chart: {
+type: "area",
+fontFamily: 'inherit',
+height: 40.0,
+sparkline: {
+enabled: true
+},
+animations: {
+enabled: false
+}
+},
+dataLabels: {
+enabled: false
+},
+fill: {
+opacity: .16,
+type: 'solid'
+},
+stroke: {
+width: 2,
+lineCap: "round",
+curve: "smooth"
+},
+series: [
+{
+name: "",
+data: [// todo
+{% for key, val in activeLoansPerDay %}
+{{ val }},{% endfor %}]
+}
+],
+tooltip: {
+theme: 'dark'
+},
+grid: {
+strokeDashArray: 4
+},
+xaxis: {
+labels: {
+padding: 0
+},
+tooltip: {
+enabled: false
+},
+axisBorder: {
+show: false
+},
+type: 'datetime'
+},
+yaxis: {
+labels: {
+padding: 4
+}
+},
+labels: [{% for key, val in activeLoansPerDay %}
+'{{ key }}',{% endfor %}],
+colors: [tabler.getColor("primary")],
+legend: {
+show: false
+}
+})).render();
+});
+	</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+window.ApexCharts && (new ApexCharts(document.getElementById('chart-total-donations'), {
+chart: {
+type: "area",
+fontFamily: 'inherit',
+height: 40.0,
+sparkline: {
+enabled: true
+},
+animations: {
+enabled: false
+}
+},
+dataLabels: {
+enabled: false
+},
+fill: {
+opacity: .16,
+type: 'solid'
+},
+stroke: {
+width: 2,
+lineCap: "round",
+curve: "smooth"
+},
+series: [
+{
+name: "",
+data: [// todo
+{% for key, val in donationsPerDay %}
+{{ val }},{% endfor %}]
+}
+],
+tooltip: {
+theme: 'dark'
+},
+grid: {
+strokeDashArray: 4
+},
+xaxis: {
+labels: {
+padding: 0
+},
+tooltip: {
+enabled: false
+},
+axisBorder: {
+show: false
+},
+type: 'datetime'
+},
+yaxis: {
+labels: {
+padding: 4
+}
+},
+labels: [{% for key, val in donationsPerDay %}
+'{{ key }}',{% endfor %}],
+colors: [tabler.getColor("primary")],
+legend: {
+show: false
+}
+})).render();
+});
+	</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+window.ApexCharts && (new ApexCharts(document.getElementById('chart-active-donations'), {
+chart: {
+type: "area",
+fontFamily: 'inherit',
+height: 40.0,
+sparkline: {
+enabled: true
+},
+animations: {
+enabled: false
+}
+},
+dataLabels: {
+enabled: false
+},
+fill: {
+opacity: .16,
+type: 'solid'
+},
+stroke: {
+width: 2,
+lineCap: "round",
+curve: "smooth"
+},
+series: [
+{
+name: "",
+data: [// todo
+{% for key, val in activeDonationsPerDay %}
+{{ val }},{% endfor %}]
+}
+],
+tooltip: {
+theme: 'dark'
+},
+grid: {
+strokeDashArray: 4
+},
+xaxis: {
+labels: {
+padding: 0
+},
+tooltip: {
+enabled: false
+},
+axisBorder: {
+show: false
+},
+type: 'datetime'
+},
+yaxis: {
+labels: {
+padding: 4
+}
+},
+labels: [{% for key, val in activeDonationsPerDay %}
+'{{ key }}',{% endfor %}],
+colors: [tabler.getColor("primary")],
+legend: {
+show: false
+}
+})).render();
+});
+	</script>
+{% endblock %}
