@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="page-body">
+    <div class="container container-tight py-4">
+      <form class="card card-md" action="/loans/book/{{book.id}}/reserve" method="POST" autocomplete="off" novalidate="">
+        <div class="card-body">
+          <h2 class="card-title text-center mb-4">Reserve a loan for {{book.title}}?</h2>
+          <p class="text-secondary mb-4 text-center">Are you sure you want to reserve a loan for this book?</p>
+          {% if estimatedDate %}
+            <p class="text-secondary mb-4 text-center">The book is estimated to be available on {{estimatedDate.format('Y-m-d')}}</p>
+          {% else %}
+            <p class="text-secondary mb-4 text-center">Book is out of stock, if you reserve the book you'll be notified when it become available again.</p>
+          {% endif %}
+          <div class="form-footer text-center">
+            <a href="/" class="btn btn-primary">
+              No, go back
+            </a>
+            <button type="submit" class="btn btn-success">
+              Yes, reserve book
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
