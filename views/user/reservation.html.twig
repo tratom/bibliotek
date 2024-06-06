@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}All reservations{% endblock %}
+
+{% block content %}
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="row row-cards">
+              <div class="col-12">
+                <div class="card">
+                  <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                      <thead>
+                        <tr>
+                          <th>Book</th>
+                          <th>User</th>
+                          <th>Requested Date</th>
+                          <th>Estimated availability date</th>
+                          <th>Status</th>
+                          <th class="w-1"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for reservation in reservations %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex py-1 align-items-center">
+                                        <span class="avatar me-2" style="background-image: url({{ reservation.book.imageURL }})"></span>
+                                        <div class="flex-fill">
+                                            <div class="font-weight-medium text-reset" tabindex="-1">{{ reservation.book.title }}</div>
+                                            <div class="text-secondary">{{ reservation.book.isbn }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                  <div class="d-flex py-1 align-items-center">
+                                        <div class="flex-fill">
+                                            <div class="font-weight-medium text-reset" tabindex="-1">{{ reservation.getUser().getName() }} {{ reservation.getUser().getSurname() }}</div>
+                                            <div class="text-secondary">{{ reservation.getUser().getEmail() }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ reservation.reservationDate.format('Y-m-d') }}</div>
+                                </td>
+                                <td>
+                                  {% if not reservation.canBeLoaned() and reservation.book.getAvailability() > 0 %}
+                                    <div>{{ reservation.book.getFirstAvailableReservationDate().format('Y-m-d') }}</div>
+                                  {% elseif not reservation.canBeLoaned() and reservation.book.getAvailability() == 0 %}
+                                    <div>Loan available but book is out of stock.</div>
+                                  {% else %}
+                                    <div>Book can be loaned until tomorrow.</div>
+                                  {% endif %}
+                                </td>
+                                <td>
+                                  <span class="badge bg-{% if reservation.getLoan() != null %}secondary{% else %}success{% endif %} me-1"></span> {% if reservation.getLoan() != null %}loaned{% else %}active{% endif %}
+                                </td>
+                                <td>
+                                {% if reservation.getLoan() == null %}
+                                  <form action="/loans/book/{{ reservation.book.getId() }}/reserve/{{ reservation.getId() }}/cancel" method="post">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" aria-label="{{ reservation.getId() }}" data-bs-original-title="Delete and notify user">
+                                        <button type="submit" class="btn btn-link text-danger">
+                                          
+                                        <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+                                        </button>
+                                    </span>
+                                  </form>
+                                {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+{% endblock %}
