@@ -28,6 +28,8 @@ $router->get('/search', 'Bibliotek\Controller\Book::searchBooks');
 $router->get('/donations', 'Bibliotek\Controller\Donation::listDonations')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->get('/donations/search', 'Bibliotek\Controller\Donation::search')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->post('/donations/add', 'Bibliotek\Controller\Donation::addDonation')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->get('/donations/{id:number}/remove', 'Bibliotek\Controller\Donation::showDelete')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->post('/donations/{id:number}/remove', 'Bibliotek\Controller\Donation::deleteDonation')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 
 /*
  * Loan
@@ -39,6 +41,11 @@ $router->get('/loans/{id:number}/end', 'Bibliotek\Controller\Loan::endLoan')->mi
 $router->post('/loans/{id:number}/end', 'Bibliotek\Controller\Loan::closeLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->get('/loans/{id:number}/review', 'Bibliotek\Controller\Loan::showReviewLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->post('/loans/{id:number}/review', 'Bibliotek\Controller\Loan::postReviewLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+// Reservation
+$router->get('/loans/book/{id:number}/reserve', 'Bibliotek\Controller\Reservation::show')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->post('/loans/book/{id:number}/reserve', 'Bibliotek\Controller\Reservation::add')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->post('/loans/book/{id:number}/reserve/{reservationId:number}', 'Bibliotek\Controller\Reservation::reserve')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->post('/loans/book/{id:number}/reserve/{reservationId:number}/cancel', 'Bibliotek\Controller\Reservation::cancel')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 
 
 /*
