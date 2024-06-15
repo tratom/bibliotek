@@ -3,6 +3,7 @@ namespace Bibliotek\Controller;
 
 use Bibliotek\Utility\Assets;
 use Bibliotek\Utility\Auth;
+use Bibliotek\Utility\Email;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Laminas\Diactoros\Response;
@@ -197,6 +198,16 @@ class Donation {
         $GLOBALS['entityManager']->persist($donation);
         $GLOBALS['entityManager']->persist($book);
         $GLOBALS['entityManager']->flush();
+
+        // Send email to user
+        $user = $donation->getGiver();
+        $email = new Email();
+        $email->new(
+            $user->getEmail(),
+            "Your donation is now {$donation->getStatus()}.",
+            "Dear {$user->getName()},\nyour donation on Bibliotek has been {$donation->getStatus()}.\nThank you for donating {$book->getTitle()}."
+        );
+        $email->send();
         
         $GLOBALS['msg']->info('The donation is now ' . $donation->getStatus());
         return new RedirectResponse('/admin/donations/manage');

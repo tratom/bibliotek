@@ -54,6 +54,7 @@ $router->get('/loans/{id:number}/end', 'Bibliotek\Controller\Loan::endLoan')->mi
 $router->post('/loans/{id:number}/end', 'Bibliotek\Controller\Loan::closeLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->get('/loans/{id:number}/review', 'Bibliotek\Controller\Loan::showReviewLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->post('/loans/{id:number}/review', 'Bibliotek\Controller\Loan::postReviewLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
+$router->get('/loans/{id:number}/postpone', 'Bibliotek\Controller\Loan::postponeLoan')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 // Reservation
 $router->get('/loans/book/{id:number}/reserve', 'Bibliotek\Controller\Reservation::show')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
 $router->post('/loans/book/{id:number}/reserve', 'Bibliotek\Controller\Reservation::add')->middleware(new \Bibliotek\Middleware\AuthMiddleware);
@@ -77,7 +78,6 @@ $router->group('/admin', function (\League\Route\RouteGroup $router) {
     $router->post('/users/{id:number}/edit', 'Bibliotek\Controller\User::adminEdit');
     $router->get('/users/{id:number}/delete', 'Bibliotek\Controller\User::adminShowDelete');
     $router->post('/users/{id:number}/delete', 'Bibliotek\Controller\User::adminDelete');
-    
     /*
      * Books
      */

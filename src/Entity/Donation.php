@@ -135,4 +135,75 @@ class Donation {
     public function isLocalUpload() : bool {
         return !filter_var($this->imageURL, FILTER_VALIDATE_URL);
     }
+
+    /*
+     * Stats
+     */
+
+    public static function getDonationsPerDays(\DateTime $startDate, \DateTime $endDate): array {
+        // Create QueryBuilder instance
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+
+        // Build the query to get the donation count grouped by date
+        $qb->select('COUNT(d.id) AS donation_count, SUBSTRING(d.presentationDate, 1, 10) AS donation_date')
+           ->from('Bibliotek\Entity\Donation', 'd')
+           ->where($qb->expr()->andX(
+                $qb->expr()->between('d.presentationDate', ':start_date', ':end_date'),
+            ))
+           ->groupBy('donation_date')
+           ->orderBy('donation_date', 'ASC')
+           ->setParameter('start_date', $startDate->format('Y-m-d'))
+           ->setParameter('end_date', $endDate->format('Y-m-d'));
+
+        // Execute the query and get the result
+        $result = $qb->getQuery()->getResult();
+
+        $statistics = [];
+        $currentDate = clone $startDate;
+        while ($currentDate <= $endDate) {
+            $statistics[$currentDate->format('Y-m-d')] = 0;
+            $currentDate->modify('+1 day');
+        }
+
+        // Populate the statistics with the actual donation counts
+        foreach ($result as $row) {
+            $statistics[$row['donation_date']] = $row['donation_count'];
+        }
+
+        return $statistics;
+    }
+
+    public static function getActiveDonationsPerDays(\DateTime $startDate, \DateTime $endDate): array {
+        // Create QueryBuilder instance
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+
+        // Build the query to get the donation count grouped by date
+        $qb->select('COUNT(d.id) AS donation_count, SUBSTRING(d.presentationDate, 1, 10) AS donation_date')
+           ->from('Bibliotek\Entity\Donation', 'd')
+           ->where($qb->expr()->andX(
+                $qb->expr()->between('d.presentationDate', ':start_date', ':end_date'),
+                $qb->expr()->notIn('d.status', ['rejected'])
+            ))
+           ->groupBy('donation_date')
+           ->orderBy('donation_date', 'ASC')
+           ->setParameter('start_date', $startDate->format('Y-m-d'))
+           ->setParameter('end_date', $endDate->format('Y-m-d'));
+
+        // Execute the query and get the result
+        $result = $qb->getQuery()->getResult();
+
+        $statistics = [];
+        $currentDate = clone $startDate;
+        while ($currentDate <= $endDate) {
+            $statistics[$currentDate->format('Y-m-d')] = 0;
+            $currentDate->modify('+1 day');
+        }
+
+        // Populate the statistics with the actual donation counts
+        foreach ($result as $row) {
+            $statistics[$row['donation_date']] = $row['donation_count'];
+        }
+
+        return $statistics;
+    }
 }

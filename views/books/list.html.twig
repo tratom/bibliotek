@@ -32,6 +32,7 @@
                         <tr>
                           <th></th>
                           <th>Author(s)</th>
+                          <th>Reviews</th>
                           <th>Availability</th>
                           <th class="w-1"></th>
                           <th class="w-1"></th>
@@ -51,6 +52,9 @@
                                 </td>
                                 <td>
                                     <div>{{ book.authors }}</div>
+                                </td>
+                                <td>
+                                    <div>{{ book.countReviews() }}</div>
                                 </td>
                                 <td>
                                     <span class="badge bg-{% if book.getAvailability() == 0 %}danger{% else %}success{% endif %} me-1"></span> {{ book.getAvailability() }} available

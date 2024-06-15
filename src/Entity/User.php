@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'users')]
+#[ORM\UniqueConstraint(name: "email", columns: ["email"])]
 class User {
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
@@ -45,13 +46,13 @@ class User {
     #[ORM\Column(type: 'string')]
     private string $role;
 
-    #[ORM\OneToMany(targetEntity: Loan::class, mappedBy: 'reader')]
+    #[ORM\OneToMany(targetEntity: Loan::class, mappedBy: 'reader', cascade: ["remove"])]
     private Collection $userLoans;
 
-    #[ORM\OneToMany(targetEntity: Donation::class, mappedBy: 'giver')]
+    #[ORM\OneToMany(targetEntity: Donation::class, mappedBy: 'giver', cascade: ["remove"])]
     private Collection $userDonations;
 
-    #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'user')]
+    #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'user', cascade: ["remove"])]
     private Collection $userReservations;
 
     public function __construct() {
@@ -92,12 +93,20 @@ class User {
         $this->birthday = $birthday;
     }
     
+    public function getBirthday(): \DateTime {
+        return $this->birthday;
+    }
+
     public function setEmail(string $email): void {
         $this->email = $email;
     }
     
     public function setPassword(string $password): void {
         $this->password = $password;
+    }
+
+    public function getPassword() : string {
+        return $this->password;
     }
     
     public function setMaxLoanNum(int $maxLoanNum): void {
@@ -126,6 +135,10 @@ class User {
     
     public function setReputation(int $reputation): void {
         $this->reputation = $reputation;
+    }
+
+    public function getReputation(): int {
+        return $this->reputation;
     }
     
     public function setRole(string $role): void {
@@ -199,10 +212,73 @@ class User {
         return $qb->getQuery()->getSingleScalarResult();
     }
 
+    public function countTotalLoans(): int {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('count(l)')
+            ->from('Bibliotek\Entity\Loan', 'l')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('l.reader', ':user'),
+            ))
+            ->setParameter('user', $this);
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    public function countTotalDonations(): int {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('count(d)')
+            ->from('Bibliotek\Entity\Donation', 'd')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('d.giver', ':user'),
+            ))
+            ->setParameter('user', $this);
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+    
+    public function hasActiveBookReservation($book) : bool {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('count(r)')
+            ->from('Bibliotek\Entity\Reservation', 'r')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('r.user', ':user'),
+                $qb->expr()->eq('r.book', ':book'),
+                $qb->expr()->isNull('r.loan')
+            ))
+            ->setParameter('user', $this)
+            ->setParameter('book', $book);
+        return $qb->getQuery()->getSingleScalarResult() > 0;
+    }
+
+    public function getActiveReservations() : array {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('r')
+            ->from('Bibliotek\Entity\Reservation', 'r')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('r.user', ':user'),
+                $qb->expr()->isNull('r.loan')
+            ))
+            ->orderBy('r.id', 'DESC')
+            ->setParameter('user', $this);
+        return $qb->getQuery()->getResult();
+    } 
+
     public function getMaxReturnDate() : \DateTime {
         $end = new \DateTime();
         $duration = $this->getMaxLoanDuration();
         $end->modify("+$duration days");
         return $end;
+    }
+
+    public static function getTotalUsers(): int {
+        // Create QueryBuilder instance
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+
+        // Build the query to get the book count
+        $qb->select('COUNT(u.id) AS user_count')
+           ->from('Bibliotek\Entity\User', 'u');
+
+        // Execute the query and get the result
+        $result = $qb->getQuery()->getSingleScalarResult();
+
+        return $result;
     }
 }

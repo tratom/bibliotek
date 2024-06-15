@@ -102,5 +102,74 @@ class Loan {
     public function getElapsedDays() : \DateInterval {
         return $this->end->diff($this->getMaxReturnDate());
     }
+
+    /*
+     * Stats
+     */
+
+     public static function getLoansPerDays(\DateTime $startDate, \DateTime $endDate): array {
+        // Create QueryBuilder instance
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+
+        // Build the query to get the loan count grouped by date
+        $qb->select('COUNT(l.id) AS loan_count, SUBSTRING(l.begin, 1, 10) AS loan_date')
+           ->from('Bibliotek\Entity\Loan', 'l')
+           ->andWhere('l.begin BETWEEN :start_date AND :end_date')
+           ->groupBy('loan_date')
+           ->orderBy('loan_date', 'ASC')
+           ->setParameter('start_date', $startDate->format('Y-m-d'))
+           ->setParameter('end_date', $endDate->format('Y-m-d'));
+
+        // Execute the query and get the result
+        $result = $qb->getQuery()->getResult();
+
+        $statistics = [];
+        $currentDate = clone $startDate;
+        while ($currentDate <= $endDate) {
+            $statistics[$currentDate->format('Y-m-d')] = 0;
+            $currentDate->modify('+1 day');
+        }
+
+        // Populate the statistics with the actual loan counts
+        foreach ($result as $row) {
+            $statistics[$row['loan_date']] = $row['loan_count'];
+        }
+
+        return $statistics;
+    }
+
+    public static function getActiveLoansPerDays(\DateTime $startDate, \DateTime $endDate): array {
+        // Create QueryBuilder instance
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+
+        // Build the query to get the loan count grouped by date
+        $qb->select('COUNT(l.id) AS loan_count, SUBSTRING(l.begin, 1, 10) AS loan_date')
+           ->from('Bibliotek\Entity\Loan', 'l')
+           ->where($qb->expr()->andX(
+                $qb->expr()->between('l.begin', ':start_date', ':end_date'),
+                $qb->expr()->isNull('l.end')
+            ))
+           ->groupBy('loan_date')
+           ->orderBy('loan_date', 'ASC')
+           ->setParameter('start_date', $startDate->format('Y-m-d'))
+           ->setParameter('end_date', $endDate->format('Y-m-d'));
+
+        // Execute the query and get the result
+        $result = $qb->getQuery()->getResult();
+
+        $statistics = [];
+        $currentDate = clone $startDate;
+        while ($currentDate <= $endDate) {
+            $statistics[$currentDate->format('Y-m-d')] = 0;
+            $currentDate->modify('+1 day');
+        }
+
+        // Populate the statistics with the actual loan counts
+        foreach ($result as $row) {
+            $statistics[$row['loan_date']] = $row['loan_count'];
+        }
+
+        return $statistics;
+    }
 }
 ?>
