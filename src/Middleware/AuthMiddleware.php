@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bibliotek\Middleware;
 
+use Bibliotek\Foundation\User as FoundationUser;
 use Bibliotek\Utility\Auth;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -32,7 +33,7 @@ class AuthMiddleware implements MiddlewareInterface {
 
         // Check if user exist
         $userId = Auth::getTokenPayload($jwt)['sub'];
-        $user = $GLOBALS['entityManager']->find('Bibliotek\Entity\User', $userId);
+        $user = FoundationUser::findUser($userId);
         if ($user === null) {
             return new RedirectResponse("/login?redirectTo=" . $request->getRequestTarget());
         }

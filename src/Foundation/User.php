@@ -9,6 +9,12 @@ class User {
         $user = $GLOBALS['entityManager']->find('Bibliotek\Entity\User', $id);
         return $user;
     }
+
+    public static function findUserEmail(string $email) : EntityUser{
+        $user = $GLOBALS['entityManager']->getRepository(self::class)->findOneBy(['email' => $email]);
+        return $user;
+    }
+
     
     public static function saveUser(EntityUser $user) : void{
         $GLOBALS['entityManager']->persist($user);

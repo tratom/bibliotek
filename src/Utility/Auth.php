@@ -3,6 +3,7 @@
 namespace Bibliotek\Utility;
 
 use Bibliotek\Entity\User;
+use Bibliotek\Foundation\User as FoundationUser;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
@@ -53,7 +54,7 @@ class Auth {
             return null;
         }
         $payload = self::getTokenPayload($jwt);
-        $user = $GLOBALS['entityManager']->find(User::class, $payload['sub']);
+        $user = FoundationUser::findUser($payload['sub']);
         return $user;
     }
 }

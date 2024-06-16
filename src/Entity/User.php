@@ -154,7 +154,7 @@ class User {
 
     public static function checkLogin(string $email, string $password): ?self {
         // Fetch the user by email
-        $user = $GLOBALS['entityManager']->getRepository(self::class)->findOneBy(['email' => $email]);
+        $user = FoundationUser::findUserEmail($email);
 
         // If user is found and password matches, return the user object
         if ($user && password_verify($password, $user->password)) {
