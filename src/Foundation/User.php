@@ -2,7 +2,6 @@
 
 namespace Bibliotek\Foundation;
 
-use Bibliotek\Entity\Book as EntityBook;
 use Bibliotek\Entity\User as EntityUser;
 
 class User {

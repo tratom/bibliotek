@@ -2,7 +2,6 @@
 namespace Bibliotek\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'donations')]

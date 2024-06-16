@@ -1,4 +1,5 @@
 <?php
+
 namespace Bibliotek\Foundation;
 
 use Bibliotek\Entity\Book;

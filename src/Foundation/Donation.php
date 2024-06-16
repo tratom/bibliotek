@@ -1,7 +1,8 @@
 <?php
+
 namespace Bibliotek\Foundation;
 
-use Bibliotek\Entity\Book as EntityBook;
+use Bibliotek\Entity\Book;
 use Bibliotek\Entity\Donation as EntityDonation;
 use Bibliotek\Entity\User;
 
@@ -88,7 +89,7 @@ class Donation {
         return $statistics;
     }
 
-    public static function search(string $isbn) : EntityBook {
+    public static function search(string $isbn) : Book {
         $qb = $GLOBALS['entityManager']->createQueryBuilder();
         $qb->select('b')
             ->from('Bibliotek\Entity\Book', 'b')
