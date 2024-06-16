@@ -8,6 +8,7 @@ exam project for "Programmazione per il web" course, Information Engineering, Un
 
 ### or install with docker
 
+`docker compose up -d`
 `docker run --rm -it -v "$(pwd):/app" composer/composer install`
 
 ## generate database schema
@@ -20,8 +21,5 @@ ref: https://www.doctrine-project.org/projects/doctrine-orm/en/3.2/tutorials/get
 
 `php bin/doctrine orm:schema-tool:drop --force`
 
-## local testing
-
-`docker compose up -d`
 
 now visits http://localhost:8080/

@@ -6,6 +6,10 @@ use Bibliotek\Entity\Book;
 use Bibliotek\Entity\Donation;
 use Bibliotek\Entity\Loan;
 use Bibliotek\Entity\User;
+use Bibliotek\Foundation\Book as FoundationBook;
+use Bibliotek\Foundation\Donation as FoundationDonation;
+use Bibliotek\Foundation\Loan as FoundationLoan;
+use Bibliotek\Foundation\User as FoundationUser;
 use Laminas\Diactoros\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -36,12 +40,12 @@ class Stats {
             $start->modify("-7 days");  
         }
         
-        $loansPerDay = Loan::getLoansPerDays($start, $end);
-        $activeLoansPerDay = Loan::getActiveLoansPerDays($start, $end);
-        $donationsPerDay = Donation::getDonationsPerDays($start, $end);
-        $activeDonationsPerDay = Donation::getActiveDonationsPerDays($start, $end);
-        $totalBooks = Book::getTotalBooks();
-        $totalUsers = User::getTotalUsers();
+        $loansPerDay = FoundationLoan::getLoansPerDays($start, $end);
+        $activeLoansPerDay = FoundationLoan::getActiveLoansPerDays($start, $end);
+        $donationsPerDay = FoundationDonation::getDonationsPerDays($start, $end);
+        $activeDonationsPerDay = FoundationDonation::getActiveDonationsPerDays($start, $end);
+        $totalBooks = FoundationBook::getTotalBooks();
+        $totalUsers = FoundationUser::getTotalUsers();
 
         // var_dump($donationsPerDay);
 

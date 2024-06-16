@@ -3,6 +3,7 @@
 namespace Bibliotek\Controller;
 
 use Bibliotek\Entity\User as EntityUser;
+use Bibliotek\Foundation\User as FoundationUser;
 use Bibliotek\Utility\Auth;
 use Bibliotek\Utility\Email;
 use Psr\Http\Message\ResponseInterface;
@@ -109,9 +110,7 @@ class User {
         if (!empty($params['newPassword'])) {
             $user->setPassword(password_hash($params['newPassword'], PASSWORD_BCRYPT));
         }
-
-        $GLOBALS['entityManager']->persist($user);
-        $GLOBALS['entityManager']->flush();
+        FoundationUser::saveUser($user);
 
         $GLOBALS['msg']->success('You settings were successfully updated.');
         return new RedirectResponse('/settings', 302);
@@ -122,7 +121,7 @@ class User {
      */
 
     public static function listUsers(ServerRequestInterface $request, array $args): ResponseInterface {
-        $users = $GLOBALS['entityManager']->getRepository('Bibliotek\Entity\User')->findAll();
+        $users = FoundationUser::getRepository();
 
         $html = $GLOBALS['twig']->render('user/admin/list.html.twig', ['users' => $users]);
 
@@ -133,7 +132,7 @@ class User {
 
     public static function showUser(ServerRequestInterface $request, array $args): ResponseInterface {
         $id = $args['id'];
-        $user = $GLOBALS['entityManager']->find('Bibliotek\Entity\User', $id);
+        $user = FoundationUser::findUser($id);
         if ($user === null) {
             throw new NotFoundException();
         }
@@ -193,8 +192,7 @@ class User {
             $user->setRole('user');
         }
 
-        $GLOBALS['entityManager']->persist($user);
-        $GLOBALS['entityManager']->flush();
+        FoundationUser::saveUser($user);
 
         // Send email to user
         $email = new Email();
@@ -208,7 +206,7 @@ class User {
 
     public static function adminShowEdit(ServerRequestInterface $request, array $args): ResponseInterface {
         $id = $args['id'];
-        $user = $GLOBALS['entityManager']->find('Bibliotek\Entity\User', $id);
+        $user = FoundationUser::findUser($id);
         if ($user === null) {
             throw new NotFoundException();
         }
@@ -221,7 +219,7 @@ class User {
 
     public static function adminEdit(ServerRequestInterface $request, array $args): ResponseInterface {
         $id = $args['id'];
-        $user = $GLOBALS['entityManager']->find('Bibliotek\Entity\User', $id);
+        $user = FoundationUser::findUser($id);
         if ($user === null) {
             throw new NotFoundException();
         }
@@ -263,8 +261,7 @@ class User {
             $user->setRole('user');
         }
 
-        $GLOBALS['entityManager']->persist($user);
-        $GLOBALS['entityManager']->flush();
+        FoundationUser::saveUser($user);
 
         $GLOBALS['msg']->success('The user was successfully edited.');
         return new RedirectResponse('/admin/users', 302);
@@ -311,7 +308,7 @@ class User {
 
     public static function adminShowDelete(ServerRequestInterface $request, array $args): ResponseInterface {
         $id = $args['id'];
-        $user = $GLOBALS['entityManager']->find('Bibliotek\Entity\User', $id);
+        $user = FoundationUser::findUser($id);
         if ($user === null) {
             throw new NotFoundException();
         }
@@ -324,13 +321,12 @@ class User {
 
     public static function adminDelete(ServerRequestInterface $request, array $args): ResponseInterface {
         $id = $args['id'];
-        $user = $GLOBALS['entityManager']->find('Bibliotek\Entity\User', $id);
+        $user = FoundationUser::findUser($id);
         if ($user === null) {
             throw new NotFoundException();
         }
 
-        $GLOBALS['entityManager']->remove($user);
-        $GLOBALS['entityManager']->flush();
+        FoundationUser::saveUser($user);
 
         $GLOBALS['msg']->success('The user was successfully deleted.');
         return new RedirectResponse('/admin/users', 302);

@@ -2,6 +2,10 @@
 
 namespace Bibliotek\Entity;
 
+use Bibliotek\Foundation\Donation;
+use Bibliotek\Foundation\Loan;
+use Bibliotek\Foundation\Reservation;
+use Bibliotek\Foundation\User as FoundationUser;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -187,78 +191,27 @@ class User {
     }
 
     public function hasActiveBookLoans(Book $book): bool {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('l')
-            ->from('Bibliotek\Entity\Loan', 'l')
-            ->where($qb->expr()->andX(
-                $qb->expr()->eq('l.book', ':book'),
-                $qb->expr()->eq('l.reader', ':user'),
-                $qb->expr()->isNull('l.end')
-            ))
-            ->setParameter('book', $book)
-            ->setParameter('user', $this);
-        return count($qb->getQuery()->getResult()) > 0;
+        return Loan::hasActiveBookLoans($book, $this);
     }
 
     public function countActiveLoans(): int {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('count(l)')
-            ->from('Bibliotek\Entity\Loan', 'l')
-            ->where($qb->expr()->andX(
-                $qb->expr()->eq('l.reader', ':user'),
-                $qb->expr()->isNull('l.end')
-            ))
-            ->setParameter('user', $this);
-        return $qb->getQuery()->getSingleScalarResult();
+        return Loan::countActiveUserLoans($this);
     }
 
     public function countTotalLoans(): int {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('count(l)')
-            ->from('Bibliotek\Entity\Loan', 'l')
-            ->where($qb->expr()->andX(
-                $qb->expr()->eq('l.reader', ':user'),
-            ))
-            ->setParameter('user', $this);
-        return $qb->getQuery()->getSingleScalarResult();
+        return Loan::countTotalLoans($this);
     }
 
     public function countTotalDonations(): int {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('count(d)')
-            ->from('Bibliotek\Entity\Donation', 'd')
-            ->where($qb->expr()->andX(
-                $qb->expr()->eq('d.giver', ':user'),
-            ))
-            ->setParameter('user', $this);
-        return $qb->getQuery()->getSingleScalarResult();
+        return Donation::countTotalDonations($this);
     }
     
     public function hasActiveBookReservation($book) : bool {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('count(r)')
-            ->from('Bibliotek\Entity\Reservation', 'r')
-            ->where($qb->expr()->andX(
-                $qb->expr()->eq('r.user', ':user'),
-                $qb->expr()->eq('r.book', ':book'),
-                $qb->expr()->isNull('r.loan')
-            ))
-            ->setParameter('user', $this)
-            ->setParameter('book', $book);
-        return $qb->getQuery()->getSingleScalarResult() > 0;
+        return Reservation::hasActiveBookReservation($book, $this) > 0;
     }
 
     public function getActiveReservations() : array {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('r')
-            ->from('Bibliotek\Entity\Reservation', 'r')
-            ->where($qb->expr()->andX(
-                $qb->expr()->eq('r.user', ':user'),
-                $qb->expr()->isNull('r.loan')
-            ))
-            ->orderBy('r.id', 'DESC')
-            ->setParameter('user', $this);
-        return $qb->getQuery()->getResult();
+        return Reservation::getActiveUserReservations($this);
     } 
 
     public function getMaxReturnDate() : \DateTime {
@@ -269,16 +222,6 @@ class User {
     }
 
     public static function getTotalUsers(): int {
-        // Create QueryBuilder instance
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-
-        // Build the query to get the book count
-        $qb->select('COUNT(u.id) AS user_count')
-           ->from('Bibliotek\Entity\User', 'u');
-
-        // Execute the query and get the result
-        $result = $qb->getQuery()->getSingleScalarResult();
-
-        return $result;
+        return FoundationUser::getTotalUsers();
     }
 }

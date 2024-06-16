@@ -1,60 +1,76 @@
 <?php
-class fReservation{
-    private static $class = "fReservation";
-    private static $table;
-    private static $val = "(:number,:book,:reader,:estimated_date)";
-    public function __construct(){}
-    /** metodo che lega i parametri da inserire con quelli della INSERT
-    * @param PDOStatement $stmt 
-    * @param eReservation $res luogo in cui i dati devono essere inseriti nel DB */    
-    public static function bind($stmt, eReservation $res){
-        $stmt->bindValue(':number', NULL, PDO::PARAM_INT); //number è NULL perchè viene generato in automatico
-        $stmt->bindValue(':book', $res->get_book(), PDO::PARAM_eBook);
-        $stmt->bindValue(':reader', $res->get_reader(), PDO::PARAM_eUser);
-        $stmt->bindValue(':estimated_date', $res->estimate_date(), PDO::PARAM_Datetime);
-    }        
-    //metodo di restituzione nome classe (costruzione query)
-    public static function get_class(){
-        return self::$class;
-    }
-    //metodo di restituzione nome tabella (costruzione query)
-    public static function get_table_name(){
-        return self::$table;
-    }
-    //metodo di restituzione dei valori (costruzione query)
-    public static function get_values(){
-        return self::$val;
-    }
-    /** funzione che permette il salvataggio delle reservation nel DB
-     * @param $res reservation da salvare
-     * @return $number della reservation salvata
-     */
-    public static function store(eReservation $res){
-        $store_db = fDatabase::getIstance();
-        $number = $store_db->storeDB(static::getClass(), $res);
-        if ($number){
-            return $number;
-        }
-        else{
-            return null;
-        }
 
-    }
-    /** funzione che permette di verificare se esiste una reservation nel DB 
-     * @param $riga valore riga su cui si vuole verificare l'esistenza
-     * @param $col valore colonna
-     * @param return bool $present 
-    */
-    public static function exist($riga, $col){
-        $present = false;
-        $exist_db = fDatabase::getIstance();
-        $ris =  $exist_db->existDB(static::getClass(), $col, $riga);
-        if($ris!=null){
-            $present = true;
-        }
-        return $present;
+namespace Bibliotek\Foundation;
 
+use Bibliotek\Entity\Book;
+use Bibliotek\Entity\Reservation as EntityReservation;
+use Bibliotek\Entity\User;
+
+class Reservation {
+    public static function findReservation(int $id) : EntityReservation{
+        $reservation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Book', $id);
+        return $reservation;
     }
 
+    public static function saveReservation(EntityReservation $reservation) : void{
+        $GLOBALS['entityManager']->persist($reservation);
+        $GLOBALS['entityManager']->flush();
+    }
+
+    public static function getRepository(): array {
+        $reservations = $GLOBALS['entityManager']->getRepository('Bibliotek\Entity\Reservation')->findAll();
+        return $reservations;
+    }
+
+    public static function getActiveBookReservations(Book $book) {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('r')
+            ->from('Bibliotek\Entity\Reservation', 'r')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('r.book', ':book'),
+                $qb->expr()->isNull('r.loan')
+            ))
+            ->setParameter('book', $book)
+            ->orderBy('r.id', 'ASC');
+        return $qb->getQuery()->getResult();
+    }
+
+    public static function countActiveReservations(Book $book): int {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('count(r)')
+            ->from('Bibliotek\Entity\Reservation', 'r')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('r.book', ':book'),
+                $qb->expr()->isNull('r.loan')
+            ))
+            ->setParameter('book', $book);
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+    
+    public static function hasActiveBookReservation(Book $book, User $user) : bool {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('count(r)')
+            ->from('Bibliotek\Entity\Reservation', 'r')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('r.user', ':user'),
+                $qb->expr()->eq('r.book', ':book'),
+                $qb->expr()->isNull('r.loan')
+            ))
+            ->setParameter('user', $user)
+            ->setParameter('book', $book);
+        return $qb->getQuery()->getSingleScalarResult() > 0;
+    }
+
+    public static function getActiveUserReservations(User $user) : array {
+        $qb = $GLOBALS['entityManager']->createQueryBuilder();
+        $qb->select('r')
+            ->from('Bibliotek\Entity\Reservation', 'r')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('r.user', ':user'),
+                $qb->expr()->isNull('r.loan')
+            ))
+            ->orderBy('r.id', 'DESC')
+            ->setParameter('user', $user);
+        return $qb->getQuery()->getResult();
+    }
 }
-?>

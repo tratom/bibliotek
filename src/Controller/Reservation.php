@@ -4,6 +4,9 @@ namespace Bibliotek\Controller;
 
 use Bibliotek\Entity\Loan;
 use Bibliotek\Entity\Reservation as EntityReservation;
+use Bibliotek\Foundation\Book;
+use Bibliotek\Foundation\Loan as FoundationLoan;
+use Bibliotek\Foundation\Reservation as FoundationReservation;
 use Bibliotek\Utility\Auth;
 use Bibliotek\Utility\Email;
 use DateTime;
@@ -18,7 +21,7 @@ class Reservation {
     public static function show(ServerRequestInterface $request, array $args): ResponseInterface {
         $user = Auth::currentUser();
         $id = $args['id'];
-        $book = $GLOBALS['entityManager']->find('Bibliotek\Entity\Book', $id);
+        $book = Book::findBook($id);
         if ($book === null) {
             throw new NotFoundException();
         }
@@ -47,7 +50,7 @@ class Reservation {
     public static function add(ServerRequestInterface $request, array $args): ResponseInterface {
         $user = Auth::currentUser();
         $id = $args['id'];
-        $book = $GLOBALS['entityManager']->find('Bibliotek\Entity\Book', $id);
+        $book = Book::findBook($id);
         if ($book === null) {
             throw new NotFoundException();
         }
@@ -57,8 +60,7 @@ class Reservation {
         $reservation->setUser($user);
         $reservation->setBook($book);
         
-        $GLOBALS['entityManager']->persist($reservation);
-        $GLOBALS['entityManager']->flush();
+        FoundationReservation::saveReservation($reservation);
 
         $firstAvailableDate = $book->getFirstAvailableReservationDate();
 
@@ -80,12 +82,12 @@ class Reservation {
         $user = Auth::currentUser();
         $bookId = $args['id'];
         $reservationId = $args['reservationId'];
-        $book = $GLOBALS['entityManager']->find('Bibliotek\Entity\Book', $bookId);
+        $book = Book::findBook($bookId);
         if ($book === null) {
             throw new NotFoundException();
         }
 
-        $reservation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Reservation', $reservationId);
+        $reservation = FoundationReservation::findReservation($reservationId);
         if ($reservation === null) {
             throw new NotFoundException();
         }
@@ -113,14 +115,11 @@ class Reservation {
         $loan->setReader($user);
         $loan->setBook($book);
         
-        $GLOBALS['entityManager']->persist($loan);
+        FoundationLoan::saveLoan($loan);
 
         // Update reservation
         $reservation->setLoan($loan);
-        $GLOBALS['entityManager']->persist($reservation);
-
-        // Save all
-        $GLOBALS['entityManager']->flush();
+        FoundationReservation::saveReservation($reservation);
 
         $GLOBALS['msg']->success('The book was successfully loaned.');
         return new RedirectResponse('/loans');
@@ -129,7 +128,7 @@ class Reservation {
     public static function cancel(ServerRequestInterface $request, array $args) : ResponseInterface {
         $user = Auth::currentUser();
         $reservationId = $args['reservationId'];
-        $reservation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Reservation', $reservationId);
+        $reservation = FoundationReservation::findReservation($reservationId);
 
         if ($reservation === null) {
             throw new NotFoundException();
@@ -145,8 +144,7 @@ class Reservation {
             throw new NotFoundException();
         }
 
-        $GLOBALS['entityManager']->remove($reservation);
-        $GLOBALS['entityManager']->flush();
+        FoundationReservation::saveReservation($reservation);
 
         if($isAdmin) {
             $email = new Email();
@@ -184,7 +182,7 @@ class Reservation {
      * Admin
      */
     public static function manage(ServerRequestInterface $request): ResponseInterface {
-        $reservations = $GLOBALS['entityManager']->getRepository('Bibliotek\Entity\Reservation')->findAll();
+        $reservations = FoundationReservation::getRepository();
         $html = $GLOBALS['twig']->render('loans/admin/reservations.html.twig', ['reservations' => $reservations]);
 
         $response = new Response;

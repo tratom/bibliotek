@@ -1,6 +1,8 @@
 <?php
 namespace Bibliotek\Controller;
 
+use Bibliotek\Foundation\Book;
+use Bibliotek\Foundation\Donation as FoundationDonation;
 use Bibliotek\Utility\Assets;
 use Bibliotek\Utility\Auth;
 use Bibliotek\Utility\Email;
@@ -31,13 +33,7 @@ class Donation {
             $html = $GLOBALS['twig']->render('donations/search.html.twig');
         } else {
             $isbn = $params['isbn'];
-            $qb = $GLOBALS['entityManager']->createQueryBuilder();
-            $qb->select('b')
-                ->from('Bibliotek\Entity\Book', 'b')
-                ->where('b.isbn = :isbn')
-                ->setParameter('isbn', $isbn)
-                ->setMaxResults(1);
-            $book = $qb->getQuery()->getResult();
+            $book = FoundationDonation::search($isbn);
             $html = $GLOBALS['twig']->render('donations/completeSearch.html.twig', ['book' => $book, 'isbn' => $isbn]);
         }
 
@@ -52,7 +48,7 @@ class Donation {
 
         if(isset($params['bookId'])){
             // Get book from id
-            $book = $GLOBALS['entityManager']->find('Bibliotek\Entity\Book', $params['bookId']);
+            $book = Book::findBook($params['bookId']);
             // New donation from existing book
             $donation = new \Bibliotek\Entity\Donation();
             $donation->setPresentationDate(new \DateTime());
@@ -72,8 +68,7 @@ class Donation {
             }
 
             // Save
-            $GLOBALS['entityManager']->persist($donation);
-            $GLOBALS['entityManager']->flush();
+            FoundationDonation::saveDonation($donation);
 
             $GLOBALS['msg']->success('Thank you for your donation! It will be approved by an administrator as soon as possible.');
             return new RedirectResponse('/donations');
@@ -120,9 +115,8 @@ class Donation {
             throw new BadRequestException;
         }
 
-        $GLOBALS['entityManager']->persist($book);
-        $GLOBALS['entityManager']->persist($donation);
-        $GLOBALS['entityManager']->flush();
+        Book::saveBook($book);
+        FoundationDonation::saveDonation($donation);
 
         $GLOBALS['msg']->success('Thank you for your donation! It will be approved by an administrator as soon as possible.');
         return new RedirectResponse('/donations');
@@ -130,7 +124,7 @@ class Donation {
 
     public static function showDelete(ServerRequestInterface $request, array $args) : ResponseInterface {
         $user = Auth::currentUser();
-        $donation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Donation', $args['id']);
+        $donation = FoundationDonation::findDonation($args['id']);
         if($donation == null || $donation->getGiver()->getId() != $user->getId()) {
             throw new NotFoundException;
         }
@@ -146,26 +140,19 @@ class Donation {
     //cancellazione della donazione dall'utente
     public static function deleteDonation(ServerRequestInterface $request, array $args) : ResponseInterface {
         $user = Auth::currentUser();
-        $donation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Donation', $args['id']);
+        $donation = FoundationDonation::findDonation($args['id']);
         if($donation == null || $donation->getGiver()->getId() != $user->getId()) {
             throw new NotFoundException;
         }
 
-        $GLOBALS['entityManager']->remove($donation);
-        $GLOBALS['entityManager']->flush();
+        FoundationDonation::removeDonation($donation);
 
         $GLOBALS['msg']->success('Your donation has been successfully deleted.');
         return new RedirectResponse('/donations');
     }
 
     public static function manageDonations(ServerRequestInterface $request) : ResponseInterface {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('d')
-            ->from('Bibliotek\Entity\Donation', 'd')
-            // ->where('d.status = :status')
-            // ->setParameter('status', 'pending')
-            ->orderBy('d.id', 'DESC');
-        $donations = $qb->getQuery()->getResult();
+        $donations = FoundationDonation::retrieveDonations();
 
         $html = $GLOBALS['twig']->render('donations/admin/manage.html.twig', ['donations' => $donations]);
 
@@ -177,7 +164,7 @@ class Donation {
     //metodo chiamabile da amministratore
     public static function confirmDonation(ServerRequestInterface $request, array $args) : ResponseInterface {
         $params = $request->getParsedBody();
-        $donation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Donation', $args['id']);
+        $donation = FoundationDonation::findDonation($args['id']);
         if($donation == null) {
             throw new NotFoundException;
         }
@@ -195,9 +182,8 @@ class Donation {
         $donation->setConvalidationDate(new \DateTime());
         $donation->setComment($params['comment']);
 
-        $GLOBALS['entityManager']->persist($donation);
-        $GLOBALS['entityManager']->persist($book);
-        $GLOBALS['entityManager']->flush();
+        Book::saveBook($book);
+        FoundationDonation::saveDonation($donation);
 
         // Send email to user
         $user = $donation->getGiver();
@@ -215,7 +201,7 @@ class Donation {
 
     public static function getDonation(ServerRequestInterface $request, array $args) : ResponseInterface {
         $id = $args['id'];
-        $donation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Donation', $id);
+        $donation = FoundationDonation::findDonation($args['id']);
         if ($donation === null) {
             throw new NotFoundException;
         }

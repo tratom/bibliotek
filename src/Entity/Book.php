@@ -2,6 +2,8 @@
 
 namespace Bibliotek\Entity;
 
+use Bibliotek\Foundation\Loan;
+use Bibliotek\Foundation\Reservation;
 use Bibliotek\Utility\Auth;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
@@ -160,77 +162,27 @@ class Book {
     }
 
     public function getReviews(): array {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('l')
-            ->from('Bibliotek\Entity\Loan', 'l')
-            ->where($qb->expr()->andX(
-                $qb->expr()->isNotNull('l.review'),
-                $qb->expr()->eq('l.book', ':book')
-            ))
-            ->setParameter('book', $this)
-            ->orderBy('l.id', 'DESC');
-        return $qb->getQuery()->getResult();
+        return Loan::getReviews($this);
     }
 
     public function countReviews(): int {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('count(l)')
-            ->from('Bibliotek\Entity\Loan', 'l')
-            ->where($qb->expr()->andX(
-                $qb->expr()->isNotNull('l.review'),
-                $qb->expr()->eq('l.book', ':book')
-            ))
-            ->setParameter('book', $this);
-        return $qb->getQuery()->getSingleScalarResult();
+        return Loan::countReviews($this);
     }
 
     public function countActiveLoans(): int {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('count(l)')
-            ->from('Bibliotek\Entity\Loan', 'l')
-            ->where($qb->expr()->andX(
-                $qb->expr()->eq('l.book', ':book'),
-                $qb->expr()->isNull('l.end')
-            ))
-            ->setParameter('book', $this);
-        return $qb->getQuery()->getSingleScalarResult();
+        return Loan::countActiveBookLoans($this);
     }
 
     public function getActiveLoans(): array {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('l')
-            ->from('Bibliotek\Entity\Loan', 'l')
-            ->where($qb->expr()->andX(
-                $qb->expr()->eq('l.book', ':book'),
-                $qb->expr()->isNull('l.end')
-            ))
-            ->setParameter('book', $this);
-        return $qb->getQuery()->getResult();
+        return Loan::getActiveLoans($this);
     }
 
     public function getActiveReservations() {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('r')
-            ->from('Bibliotek\Entity\Reservation', 'r')
-            ->where($qb->expr()->andX(
-                $qb->expr()->eq('r.book', ':book'),
-                $qb->expr()->isNull('r.loan')
-            ))
-            ->setParameter('book', $this)
-            ->orderBy('r.id', 'ASC');
-        return $qb->getQuery()->getResult();
+        return Reservation::getActiveBookReservations($this);
     }
 
     public function countActiveReservations(): int {
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-        $qb->select('count(r)')
-            ->from('Bibliotek\Entity\Reservation', 'r')
-            ->where($qb->expr()->andX(
-                $qb->expr()->eq('r.book', ':book'),
-                $qb->expr()->isNull('r.loan')
-            ))
-            ->setParameter('book', $this);
-        return $qb->getQuery()->getSingleScalarResult();
+        return Reservation::countActiveReservations($this);
     }
 
     public function getFirstAvailableReservationDate(): \DateTime|null {
@@ -254,23 +206,5 @@ class Book {
         }
     
         return $firstAvailableDate;
-    }
-    
-    /*
-     * Stats
-     */
-
-    public static function getTotalBooks(): int {
-        // Create QueryBuilder instance
-        $qb = $GLOBALS['entityManager']->createQueryBuilder();
-
-        // Build the query to get the book count
-        $qb->select('COUNT(b.id) AS book_count')
-           ->from('Bibliotek\Entity\Book', 'b');
-
-        // Execute the query and get the result
-        $result = $qb->getQuery()->getSingleScalarResult();
-
-        return $result;
     }
 }

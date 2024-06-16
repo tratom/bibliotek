@@ -3,6 +3,9 @@
 namespace Bibliotek\Controller;
 
 use Bibliotek\Entity\Loan as EntityLoan;
+use Bibliotek\Foundation\Book;
+use Bibliotek\Foundation\Loan as FoundationLoan;
+use Bibliotek\Foundation\Reservation;
 use Bibliotek\Utility\Assets;
 use Bibliotek\Utility\Auth;
 use Bibliotek\Utility\Email;
@@ -29,7 +32,7 @@ class Loan {
 
     public static function endLoan(ServerRequestInterface $request, array $args): ResponseInterface {
         $user = Auth::currentUser();
-        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        $loan = FoundationLoan::findLoan($args['id']);
         if ($loan == null || $loan->getReader()->getId() != $user->getId()) {
             throw new NotFoundException;
         }
@@ -43,14 +46,13 @@ class Loan {
 
     public static function closeLoan(ServerRequestInterface $request, array $args): ResponseInterface {
         $user = Auth::currentUser();
-        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        $loan = FoundationLoan::findLoan($args['id']);
         if ($loan == null || $loan->getReader()->getId() != $user->getId()) {
             throw new NotFoundException;
         }
         $loan->setEnd(new \DateTime());
 
-        $GLOBALS['entityManager']->persist($loan);
-        $GLOBALS['entityManager']->flush();
+        FoundationLoan::saveLoan($loan);
 
         $reservations = $loan->getBook()->getActiveReservations();
         if(!empty($reservations)){
@@ -82,7 +84,7 @@ class Loan {
 
     public static function showReviewLoan(ServerRequestInterface $request, array $args): ResponseInterface {
         $user = Auth::currentUser();
-        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        $loan = FoundationLoan::findLoan($args['id']);
         if ($loan == null || $loan->getReader()->getId() != $user->getId()) {
             throw new NotFoundException;
         }
@@ -97,26 +99,23 @@ class Loan {
     public static function postReviewLoan(ServerRequestInterface $request, array $args): ResponseInterface {
         $params = $request->getParsedBody();
         $user = Auth::currentUser();
-        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        $loan = FoundationLoan::findLoan($args['id']);
         if ($loan == null || $loan->getReader()->getId() != $user->getId()) {
             throw new NotFoundException;
         }
         $loan->setReview($params['review']);
 
-        $GLOBALS['entityManager']->persist($loan);
-        $GLOBALS['entityManager']->flush();
+        FoundationLoan::saveLoan($loan);
 
         $GLOBALS['msg']->info('Thank you for leaving a review!');
         return new RedirectResponse('/loans');
     }
 
     public static function startLoan(ServerRequestInterface $request, array $args): ResponseInterface {
-        $user = Auth::currentUser();
-        $book = $GLOBALS['entityManager']->find('Bibliotek\Entity\Book', $args['book']);
+        $book = Book::findBook($args['book']);
         if ($book == null) {
             throw new NotFoundException;
         }
-        //todo vedere se il libro è disponibile (quantità, prestiti in corso, prenotazioni)
 
         $html = $GLOBALS['twig']->render('loans/start.html.twig', ['book' => $book]);
 
@@ -127,7 +126,7 @@ class Loan {
 
     public static function doLoan(ServerRequestInterface $request, array $args): ResponseInterface {
         $user = Auth::currentUser();
-        $book = $GLOBALS['entityManager']->find('Bibliotek\Entity\Book', $args['book']);
+        $book = Book::findBook($args['book']);
         if ($book == null) {
             throw new NotFoundException;
         }
@@ -154,8 +153,7 @@ class Loan {
         $loan->setReader($user);
         $loan->setBook($book);
         
-        $GLOBALS['entityManager']->persist($loan);
-        $GLOBALS['entityManager']->flush();
+        FoundationLoan::saveLoan($loan);
 
         // Send email to user
         $user = $loan->getReader();
@@ -173,7 +171,7 @@ class Loan {
 
     public static function postponeLoan(ServerRequestInterface $request, array $args): ResponseInterface {
         $user = Auth::currentUser();
-        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        $loan = FoundationLoan::findLoan($args['id']);
         if ($loan == null || $loan->getReader()->getId() != $user->getId()) {
             throw new NotFoundException;
         }
@@ -188,8 +186,7 @@ class Loan {
         $newBegin = clone $loan->getBegin()->modify("+$userMaxDuration days");
         $loan->setBegin($newBegin);
 
-        $GLOBALS['entityManager']->persist($loan);
-        $GLOBALS['entityManager']->flush();
+        FoundationLoan::saveLoan($loan);
 
         $GLOBALS['msg']->info("The loan has been postponed by {$userMaxDuration} days!");
         return new RedirectResponse('/loans');
@@ -200,9 +197,9 @@ class Loan {
      */
 
     public static function manageLoans(ServerRequestInterface $request): ResponseInterface {
-        $loans = $GLOBALS['entityManager']->getRepository('Bibliotek\Entity\Loan')->findAll();
+        $loans = FoundationLoan::getRepository();
         // $reservations = $user->getActiveReservations();
-        $reservations = $GLOBALS['entityManager']->getRepository('Bibliotek\Entity\Reservation')->findAll();
+        $reservations = Reservation::getRepository();
         $html = $GLOBALS['twig']->render('loans/admin/list.html.twig', ['loans' => $loans, 'reservations' => $reservations]);
 
         $response = new Response;
@@ -211,7 +208,7 @@ class Loan {
     }
 
     public static function earlyReturnLoan(ServerRequestInterface $request, array $args): ResponseInterface {
-        $loan = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $args['id']);
+        $loan = FoundationLoan::findLoan($args['id']);
         if ($loan == null) {
             throw new NotFoundException;
         }
