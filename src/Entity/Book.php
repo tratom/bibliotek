@@ -2,8 +2,8 @@
 
 namespace Bibliotek\Entity;
 
-use Bibliotek\Foundation\Loan;
-use Bibliotek\Foundation\Reservation;
+use Bibliotek\Foundation\Loan as FoundationLoan;
+use Bibliotek\Foundation\Reservation as FoundationReservation;
 use Bibliotek\Utility\Auth;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
@@ -160,27 +160,27 @@ class Book {
     }
 
     public function getReviews(): array {
-        return Loan::getReviews($this);
+        return FoundationLoan::getReviews($this);
     }
 
     public function countReviews(): int {
-        return Loan::countReviews($this);
+        return FoundationLoan::countReviews($this);
     }
 
     public function countActiveLoans(): int {
-        return Loan::countActiveBookLoans($this);
+        return FoundationLoan::countActiveBookLoans($this);
     }
 
     public function getActiveLoans(): array {
-        return Loan::getActiveLoans($this);
+        return FoundationLoan::getActiveLoans($this);
     }
 
     public function getActiveReservations() {
-        return Reservation::getActiveBookReservations($this);
+        return FoundationReservation::getActiveBookReservations($this);
     }
 
     public function countActiveReservations(): int {
-        return Reservation::countActiveReservations($this);
+        return FoundationReservation::countActiveReservations($this);
     }
 
     public function getFirstAvailableReservationDate(): \DateTime|null {

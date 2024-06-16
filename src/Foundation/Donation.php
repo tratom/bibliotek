@@ -89,7 +89,7 @@ class Donation {
         return $statistics;
     }
 
-    public static function search(string $isbn) : Book {
+    public static function search(string $isbn) : Book|array {
         $qb = $GLOBALS['entityManager']->createQueryBuilder();
         $qb->select('b')
             ->from('Bibliotek\Entity\Book', 'b')

@@ -47,42 +47,42 @@
 					</div>
 				</div>
 			</div>
-            <!-- Total loans -->
-			<div class="col-sm-6 col-lg-6">
-				<div class="card">
-					<div class="card-body">
-						<div class="d-flex align-items-center">
-							<div class="subheader">Total loans</div>
-						</div>
-						<div class="d-flex align-items-baseline">
+                        <!-- Total loans -->
+      <div class="col-sm-6 col-lg-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="subheader">Total loans</div>
+            </div>
+            <div class="d-flex align-items-baseline">
                             {% set totalLoans = 0 %}    
                             {% for l in loansPerDay %}            
-                            {% set totalLoans = totalLoans + l %}        
-                            {% endfor %}    
-							<div class="h1 mb-0 me-2">{{ totalLoans }}</div>
-						</div>
-					</div>
-					<div id="chart-total-loans" class="chart-sm" style="min-height: 40px;"></div>
-				</div>
-			</div>
+                            {% set totalLoans = totalLoans + l['loan_count'] %}        
+                            {% endfor %}
+              <div class="h1 mb-0 me-2">{{ totalLoans }}</div>
+            </div>
+          </div>
+          <div id="chart-total-loans" class="chart-sm" style="min-height: 40px;"></div>
+        </div>
+      </div>
             <!-- Active loans -->
             <div class="col-sm-6 col-lg-6">
-				<div class="card">
-					<div class="card-body">
-						<div class="d-flex align-items-center">
-							<div class="subheader">Active loans</div>
-						</div>
-						<div class="d-flex align-items-baseline">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="subheader">Active loans</div>
+            </div>
+            <div class="d-flex align-items-baseline">
                             {% set activeLoans = 0 %}    
                             {% for l in activeLoansPerDay %}            
-                            {% set activeLoans = activeLoans + l %}        
+                            {% set activeLoans = activeLoans + l['loan_count'] %}        
                             {% endfor %}    
-							<div class="h1 mb-0 me-2">{{ activeLoans }}</div>
-						</div>
-					</div>
-					<div id="chart-active-loans" class="chart-sm" style="min-height: 40px;"></div>
-				</div>
-			</div>
+              <div class="h1 mb-0 me-2">{{ activeLoans }}</div>
+            </div>
+          </div>
+          <div id="chart-active-loans" class="chart-sm" style="min-height: 40px;"></div>
+        </div>
+      </div>
             <!-- Total donations -->
             <div class="col-sm-6 col-lg-6">
 				<div class="card">

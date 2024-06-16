@@ -2,9 +2,9 @@
 
 namespace Bibliotek\Entity;
 
-use Bibliotek\Foundation\Donation;
-use Bibliotek\Foundation\Loan;
-use Bibliotek\Foundation\Reservation;
+use Bibliotek\Foundation\Donation as FoundationDonation;
+use Bibliotek\Foundation\Loan as FoundationLoan;
+use Bibliotek\Foundation\Reservation as FoundationReservation;
 use Bibliotek\Foundation\User as FoundationUser;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -190,27 +190,27 @@ class User {
     }
 
     public function hasActiveBookLoans(Book $book): bool {
-        return Loan::hasActiveBookLoans($book, $this);
+        return FoundationLoan::hasActiveBookLoans($book, $this);
     }
 
     public function countActiveLoans(): int {
-        return Loan::countActiveUserLoans($this);
+        return FoundationLoan::countActiveUserLoans($this);
     }
 
     public function countTotalLoans(): int {
-        return Loan::countTotalLoans($this);
+        return FoundationLoan::countTotalLoans($this);
     }
 
     public function countTotalDonations(): int {
-        return Donation::countTotalDonations($this);
+        return FoundationDonation::countTotalDonations($this);
     }
     
     public function hasActiveBookReservation($book) : bool {
-        return Reservation::hasActiveBookReservation($book, $this) > 0;
+        return FoundationReservation::hasActiveBookReservation($book, $this) > 0;
     }
 
     public function getActiveReservations() : array {
-        return Reservation::getActiveUserReservations($this);
+        return FoundationReservation::getActiveUserReservations($this);
     } 
 
     public function getMaxReturnDate() : \DateTime {

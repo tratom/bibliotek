@@ -9,7 +9,7 @@ exam project for "Programmazione per il web" course, Information Engineering, Un
 ### or install with docker
 
 `docker compose up -d`
-`docker run --rm -it -v "$(pwd):/app" composer/composer install`
+`docker run --rm --network host -it -v "$(pwd):/app" composer/composer install`
 
 ## generate database schema
 
