@@ -8,7 +8,7 @@ use Bibliotek\Entity\User;
 
 class Reservation {
     public static function findReservation(int $id) : EntityReservation{
-        $reservation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Book', $id);
+        $reservation = $GLOBALS['entityManager']->find('Bibliotek\Entity\Reservation', $id);
         return $reservation;
     }
 

@@ -6,7 +6,7 @@ use Bibliotek\Entity\User as EntityUser;
 
 class User {
     public static function findUser(int $id) : EntityUser{
-        $user = $GLOBALS['entityManager']->find('Bibliotek\Entity\Loan', $id);
+        $user = $GLOBALS['entityManager']->find('Bibliotek\Entity\User', $id);
         return $user;
     }
     
