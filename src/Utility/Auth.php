@@ -2,7 +2,6 @@
 
 namespace Bibliotek\Utility;
 
-use Bibliotek\Entity\User;
 use Bibliotek\Foundation\User as FoundationUser;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
