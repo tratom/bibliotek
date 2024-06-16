@@ -11,7 +11,7 @@ class User {
     }
 
     public static function findUserEmail(string $email) : EntityUser{
-        $user = $GLOBALS['entityManager']->getRepository(self::class)->findOneBy(['email' => $email]);
+        $user = $GLOBALS['entityManager']->getRepository('Bibliotek\Entity\User')->findOneBy(['email' => $email]);
         return $user;
     }
 
