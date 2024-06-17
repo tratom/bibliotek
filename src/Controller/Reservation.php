@@ -92,7 +92,7 @@ class Reservation {
             throw new NotFoundException();
         }
 
-        // Create Loan
+        // Create Reservation
         if ($user->hasActiveBookLoans($book)) {
             $GLOBALS['msg']->warning('You already have this book on loan.');
             return new RedirectResponse('/books/' . $book->getId());

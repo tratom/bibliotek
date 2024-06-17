@@ -5,12 +5,12 @@ namespace Bibliotek\Foundation;
 use Bibliotek\Entity\User as EntityUser;
 
 class User {
-    public static function findUser(int $id) : EntityUser{
+    public static function findUser(int $id) : EntityUser|null {
         $user = $GLOBALS['entityManager']->find('Bibliotek\Entity\User', $id);
         return $user;
     }
 
-    public static function findUserEmail(string $email) : EntityUser{
+    public static function findUserEmail(string $email) : EntityUser|null{
         $user = $GLOBALS['entityManager']->getRepository('Bibliotek\Entity\User')->findOneBy(['email' => $email]);
         return $user;
     }
